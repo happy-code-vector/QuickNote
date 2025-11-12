@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { storage } from '@/lib/storage';
 import { generateNotes, generateFlashcards, generateQuiz } from '@/lib/gemini';
@@ -8,7 +8,7 @@ import { Document } from '@/types';
 import { ArrowLeft, FileText, Youtube, Image as ImageIcon, Globe } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 
-export default function NewDocument() {
+function NewDocumentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderId = searchParams.get('folderId');
@@ -177,5 +177,20 @@ export default function NewDocument() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewDocument() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <NewDocumentContent />
+    </Suspense>
   );
 }
