@@ -46,8 +46,9 @@ function NewDocumentContent() {
       setNewDocId(newDoc.id);
     } catch (error) {
       setLoading(false);
-      alert('Failed to generate notes. Please check your API key and try again.');
-      console.error(error);
+      console.error('Error generating notes:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to generate notes: ${errorMessage}`);
     }
   };
 
