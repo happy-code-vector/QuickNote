@@ -32,7 +32,7 @@ export interface Document {
   id: string;
   folderId: string;
   title: string;
-  contentType: 'text' | 'youtube' | 'image';
+  contentType: 'text' | 'youtube' | 'image' | 'website';
   contentPath: string;
   note: string;
   flashcards: Array<{ question: string; answer: string }>;
