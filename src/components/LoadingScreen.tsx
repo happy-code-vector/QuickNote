@@ -68,7 +68,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
   }, [showWaiting]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center p-8 z-50">
+    <div className="fixed inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-info/90 flex items-center justify-center p-8 z-50">
       <div className="max-w-2xl w-full">
         {/* Animated Icon */}
         <div className="text-center mb-12">
@@ -76,7 +76,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
             <div className="text-7xl">🔍</div>
           </div>
           <h2 className="text-3xl font-bold text-white mt-6 mb-2">AI is working its magic</h2>
-          <p className="text-purple-200">Creating your personalized study materials</p>
+          <p className="text-white/80">Creating your personalized study materials</p>
         </div>
 
         {/* Steps */}
@@ -94,11 +94,11 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
             >
               <div className="flex-shrink-0">
                 {stepStates[index] === 'complete' ? (
-                  <CheckCircle2 className="w-6 h-6 text-green-400" />
+                  <CheckCircle2 className="w-6 h-6 text-success" />
                 ) : stepStates[index] === 'loading' ? (
-                  <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
                 ) : (
-                  <Circle className="w-6 h-6 text-gray-400" />
+                  <Circle className="w-6 h-6 text-white/40" />
                 )}
               </div>
               <span className="text-white font-medium">{step.label}</span>
@@ -109,7 +109,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         {/* Waiting Message */}
         {showWaiting && (
           <div className="mt-8 text-center animate-fade-in">
-            <p className="text-purple-200 text-lg">
+            <p className="text-white/80 text-lg">
               ⏳ Please wait a few seconds while we prepare your content{dots}
             </p>
           </div>

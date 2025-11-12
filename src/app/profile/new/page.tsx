@@ -35,18 +35,18 @@ export default function NewProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => router.push('/')}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          className="mb-6 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
         </button>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">Create Profile</h1>
+        <div className="bg-surface rounded-2xl border border-border p-8">
+          <h1 className="text-3xl font-bold mb-6 text-text-primary">Create Profile</h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -59,8 +59,8 @@ export default function NewProfile() {
                     key={emoji}
                     type="button"
                     onClick={() => setFormData({ ...formData, avatar: emoji })}
-                    className={`w-12 h-12 rounded-full text-2xl ${
-                      formData.avatar === emoji ? 'ring-4 ring-blue-500' : ''
+                    className={`w-12 h-12 rounded-full text-2xl transition-all ${
+                      formData.avatar === emoji ? 'ring-4 ring-primary' : ''
                     }`}
                     style={{ backgroundColor: formData.avatarBg }}
                   >
@@ -71,7 +71,7 @@ export default function NewProfile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Background Color
               </label>
               <div className="flex gap-3">
@@ -80,8 +80,8 @@ export default function NewProfile() {
                     key={color}
                     type="button"
                     onClick={() => setFormData({ ...formData, avatarBg: color })}
-                    className={`w-10 h-10 rounded-full ${
-                      formData.avatarBg === color ? 'ring-4 ring-blue-500' : ''
+                    className={`w-10 h-10 rounded-full transition-all ${
+                      formData.avatarBg === color ? 'ring-4 ring-primary' : ''
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -90,7 +90,7 @@ export default function NewProfile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Name
               </label>
               <input
@@ -98,18 +98,18 @@ export default function NewProfile() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-surface border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Profile Type
               </label>
               <select
                 value={formData.profileType}
                 onChange={(e) => setFormData({ ...formData, profileType: e.target.value as 'adult' | 'child' })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-surface border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
               >
                 <option value="adult">Adult</option>
                 <option value="child">Child</option>
@@ -117,7 +117,7 @@ export default function NewProfile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Age
               </label>
               <input
@@ -127,39 +127,39 @@ export default function NewProfile() {
                 max="120"
                 value={formData.age}
                 onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-surface border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Education Status
               </label>
               <input
                 type="text"
                 value={formData.educationStatus}
                 onChange={(e) => setFormData({ ...formData, educationStatus: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-surface border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
                 placeholder="e.g., High School, University"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Favourite Topic
               </label>
               <input
                 type="text"
                 value={formData.favouriteTopic}
                 onChange={(e) => setFormData({ ...formData, favouriteTopic: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-surface border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
                 placeholder="e.g., Science, History"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors"
             >
               Create Profile
             </button>
