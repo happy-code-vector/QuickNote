@@ -23,6 +23,7 @@ interface SidebarProps {
 }
 
 const navItems: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
   { id: 'home', label: 'Home', icon: 'home', href: '/documents' },
   { id: 'notes', label: 'Notes', icon: 'description', href: '/documents?type=notes' },
   { id: 'flashcards', label: 'Flashcards', icon: 'style', href: '/documents?type=flashcards' },
