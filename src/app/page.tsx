@@ -6,22 +6,33 @@ import { storage } from '@/lib/storage';
 import { Profile } from '@/types';
 import { UserPlus, Settings, Edit2, Trash2 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LandingPage } from '@/components/landing';
 
 export default function Home() {
   const router = useRouter();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [showAuth, setShowAuth] = useState(false);
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Check if onboarding is complete
     const onboardingComplete = localStorage.getItem('quicknote_onboarding_complete');
-    if (!onboardingComplete) {
-      router.push('/onboarding');
-      return;
-    }
+    setIsOnboardingComplete(!!onboardingComplete);
     
-    setProfiles(storage.getProfiles());
+    if (onboardingComplete) {
+      setProfiles(storage.getProfiles());
+    }
   }, [router]);
+
+  // Show loading state while checking onboarding status
+  if (isOnboardingComplete === null) {
+    return null;
+  }
+
+  // Show landing page if onboarding is not complete
+  if (!isOnboardingComplete) {
+    return <LandingPage />;
+  }
 
   const selectProfile = (profile: Profile) => {
     storage.setCurrentProfile(profile);
