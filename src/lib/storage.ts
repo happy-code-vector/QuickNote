@@ -80,6 +80,11 @@ export const storage = {
     return folderId ? documents.filter((d: Document) => d.folderId === folderId) : documents;
   },
   
+  getDocument: (id: string): Document | null => {
+    const documents = storage.getDocuments();
+    return documents.find(d => d.id === id) || null;
+  },
+  
   saveDocument: (document: Document) => {
     const documents = storage.getDocuments();
     const index = documents.findIndex(d => d.id === document.id);

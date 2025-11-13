@@ -39,6 +39,9 @@ const config: Config = {
       lineHeight: typography.lineHeight,
       spacing: spacing,
       borderRadius: borderRadius,
+      transitionDuration: {
+        '600': '600ms',
+      },
     },
   },
   plugins: [

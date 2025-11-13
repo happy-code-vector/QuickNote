@@ -91,6 +91,13 @@ export const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) =
     );
   }
 
+  const getDocumentRoute = (doc: Document) => {
+    if (doc.flashcards && doc.flashcards.length > 0) {
+      return `/flashcards/${doc.id}`;
+    }
+    return `/document/${doc.id}`;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {documents.map((doc) => {
@@ -102,7 +109,7 @@ export const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) =
             padding="none"
             hoverable
             clickable
-            onClick={() => router.push(`/document/${doc.id}`)}
+            onClick={() => router.push(getDocumentRoute(doc))}
             className="overflow-hidden"
           >
             {/* Thumbnail */}
