@@ -5,50 +5,135 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { storage } from '@/lib/storage';
 import { generateNotes, generateFlashcards, generateQuiz } from '@/lib/gemini';
 import { Document } from '@/types';
-import { ArrowLeft, FileText, Youtube, Image as ImageIcon, Globe } from 'lucide-react';
+import { FileText, Youtube, Image as ImageIcon, Globe, CheckCircle } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Button, Input } from '@/components/ui';
+import DropZone from '@/components/upload/DropZone';
+import FileList from '@/components/upload/FileList';
+import ErrorMessage from '@/components/upload/ErrorMessage';
+import { useFileUpload } from '@/hooks/useFileUpload';
+
+type ContentType = 'file' | 'text' | 'youtube' | 'website';
 
 function NewDocumentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderId = searchParams.get('folderId');
   
-  const [contentType, setContentType] = useState<'text' | 'youtube' | 'image' | 'website'>('text');
+  const [contentType, setContentType] = useState<ContentType>('file');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [newDocId, setNewDocId] = useState<string | null>(null);
+  const [uploadComplete, setUploadComplete] = useState(false);
+
+  const {
+    uploadFiles,
+    errors,
+    addFiles,
+    removeFile,
+    clearErrors,
+    processAllFiles,
+  } = useFileUpload({
+    onUploadComplete: (files) => {
+      setUploadComplete(true);
+    },
+    onUploadError: (errors) => {
+      console.error('Upload errors:', errors);
+    },
+  });
+
+  const handleFilesSelected = (files: File[]) => {
+    addFiles(files);
+  };
+
+  const handleProcessFiles = async () => {
+    if (uploadFiles.length === 0) return;
+    
+    await processAllFiles();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!folderId || !title.trim() || !content.trim()) return;
+    if (!folderId) return;
 
-    setLoading(true);
-    try {
-      const noteResponse = await generateNotes(content);
-      const flashcards = await generateFlashcards(content);
-      const quizzes = await generateQuiz(content);
+    // For file uploads, process files first
+    if (contentType === 'file') {
+      if (uploadFiles.length === 0) {
+        alert('Please select at least one file to upload');
+        return;
+      }
+      
+      if (!uploadComplete) {
+        await handleProcessFiles();
+        return;
+      }
 
-      const newDoc: Document = {
-        id: Date.now().toString(),
-        folderId,
-        title: title.trim(),
-        contentType,
-        contentPath: content,
-        note: noteResponse.summary,
-        flashcards,
-        quizzes,
-        chat: '',
-        createdAt: new Date().toISOString(),
-      };
+      // Use first file's name as title if not provided
+      const docTitle = title.trim() || uploadFiles[0].file.name;
+      
+      setLoading(true);
+      try {
+        // For demo, use file name as content
+        const fileContent = `Uploaded file: ${uploadFiles[0].file.name}`;
+        
+        const noteResponse = await generateNotes(fileContent);
+        const flashcards = await generateFlashcards(fileContent);
+        const quizzes = await generateQuiz(fileContent);
 
-      storage.saveDocument(newDoc);
-      setNewDocId(newDoc.id);
-    } catch (error) {
-      setLoading(false);
-      console.error('Error generating notes:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Failed to generate notes: ${errorMessage}`);
+        const newDoc: Document = {
+          id: Date.now().toString(),
+          folderId,
+          title: docTitle,
+          contentType: 'text',
+          contentPath: fileContent,
+          note: noteResponse.summary,
+          flashcards,
+          quizzes,
+          chat: '',
+          createdAt: new Date().toISOString(),
+        };
+
+        storage.saveDocument(newDoc);
+        setNewDocId(newDoc.id);
+      } catch (error) {
+        setLoading(false);
+        console.error('Error generating notes:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Failed to generate notes: ${errorMessage}`);
+      }
+    } else {
+      // Handle text/URL content types
+      if (!title.trim() || !content.trim()) return;
+
+      setLoading(true);
+      try {
+        const noteResponse = await generateNotes(content);
+        const flashcards = await generateFlashcards(content);
+        const quizzes = await generateQuiz(content);
+
+        const newDoc: Document = {
+          id: Date.now().toString(),
+          folderId,
+          title: title.trim(),
+          contentType: contentType === 'text' ? 'text' : contentType,
+          contentPath: content,
+          note: noteResponse.summary,
+          flashcards,
+          quizzes,
+          chat: '',
+          createdAt: new Date().toISOString(),
+        };
+
+        storage.saveDocument(newDoc);
+        setNewDocId(newDoc.id);
+      } catch (error) {
+        setLoading(false);
+        console.error('Error generating notes:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Failed to generate notes: ${errorMessage}`);
+      }
     }
   };
 
@@ -67,129 +152,171 @@ function NewDocumentContent() {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
 
+  const contentTypes = [
+    { id: 'file' as ContentType, label: 'Upload Files', icon: FileText },
+    { id: 'text' as ContentType, label: 'Text', icon: FileText },
+    { id: 'youtube' as ContentType, label: 'YouTube', icon: Youtube },
+    { id: 'website' as ContentType, label: 'Website', icon: Globe },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <DashboardLayout
+      title="Upload Content"
+      showSearch={false}
+      showNotifications={false}
+    >
       <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => router.push(`/documents/${folderId}`)}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back
-        </button>
-
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">New Document</h1>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content Type
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Content Type Selection */}
+          <div>
+            <label className="block text-sm font-semibold text-text-primary mb-3">
+              Content Type
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {contentTypes.map(({ id, label, icon: Icon }) => (
                 <button
+                  key={id}
                   type="button"
-                  onClick={() => setContentType('text')}
+                  onClick={() => {
+                    setContentType(id);
+                    setUploadComplete(false);
+                  }}
                   className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                    contentType === 'text' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+                    contentType === id
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50 bg-surface'
                   }`}
                 >
-                  <FileText className="w-6 h-6" />
-                  <span className="text-sm font-medium">Text</span>
+                  <Icon className="w-6 h-6" />
+                  <span className="text-sm font-medium">{label}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setContentType('youtube')}
-                  className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                    contentType === 'youtube' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <Youtube className="w-6 h-6" />
-                  <span className="text-sm font-medium">YouTube</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setContentType('image')}
-                  className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                    contentType === 'image' ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <ImageIcon className="w-6 h-6" />
-                  <span className="text-sm font-medium">Image</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setContentType('website')}
-                  className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                    contentType === 'website' ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <Globe className="w-6 h-6" />
-                  <span className="text-sm font-medium">Website</span>
-                </button>
-              </div>
+              ))}
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
+          {/* File Upload Section */}
+          {contentType === 'file' && (
+            <div className="space-y-4">
+              <DropZone
+                onFilesSelected={handleFilesSelected}
+                multiple={true}
+                disabled={uploadComplete}
+              />
+
+              {errors.length > 0 && (
+                <ErrorMessage
+                  errors={errors}
+                  onClear={clearErrors}
+                />
+              )}
+
+              {uploadFiles.length > 0 && (
+                <FileList
+                  files={uploadFiles}
+                  onRemove={removeFile}
+                  showProgress={true}
+                />
+              )}
+
+              {uploadComplete && (
+                <div className="bg-success/10 border-2 border-success rounded-lg p-4 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-success">Upload Complete!</p>
+                    <p className="text-xs text-text-secondary mt-1">
+                      Ready to generate study materials
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Text/URL Input Section */}
+          {contentType !== 'file' && (
+            <>
+              <Input
+                label="Title"
                 type="text"
                 required
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(value) => setTitle(value)}
                 placeholder="Document title"
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {contentType === 'text' ? 'Content' : 
-                 contentType === 'youtube' ? 'YouTube URL' : 
-                 contentType === 'website' ? 'Website URL' : 'Image URL'}
-              </label>
-              <textarea
-                required
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={contentType === 'text' ? 10 : 3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={
-                  contentType === 'text' 
-                    ? 'Enter your text content...' 
-                    : contentType === 'youtube'
-                    ? 'https://youtube.com/watch?v=...'
-                    : contentType === 'website'
-                    ? 'https://example.com'
-                    : 'https://example.com/image.jpg'
-                }
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-semibold text-text-primary mb-2">
+                  {contentType === 'text' ? 'Content' : 
+                   contentType === 'youtube' ? 'YouTube URL' : 
+                   'Website URL'}
+                </label>
+                <textarea
+                  required
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={contentType === 'text' ? 10 : 3}
+                  className="w-full px-4 py-3 border-2 border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-text-primary transition-all"
+                  placeholder={
+                    contentType === 'text' 
+                      ? 'Enter your text content...' 
+                      : contentType === 'youtube'
+                      ? 'https://youtube.com/watch?v=...'
+                      : 'https://example.com'
+                  }
+                />
+              </div>
+            </>
+          )}
 
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+          {/* Optional Title for File Uploads */}
+          {contentType === 'file' && uploadFiles.length > 0 && (
+            <Input
+              label="Title (Optional)"
+              type="text"
+              value={title}
+              onChange={(value) => setTitle(value)}
+              placeholder="Leave blank to use file name"
+              helperText="If not provided, the file name will be used"
+            />
+          )}
+
+          {/* Submit Button */}
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/documents/${folderId}`)}
+              fullWidth
             >
-              Create Document
-            </button>
-          </form>
-        </div>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              disabled={
+                contentType === 'file' 
+                  ? uploadFiles.length === 0 
+                  : !title.trim() || !content.trim()
+              }
+            >
+              {contentType === 'file' && !uploadComplete
+                ? 'Process Files'
+                : 'Generate Study Materials'}
+            </Button>
+          </div>
+        </form>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 
 export default function NewDocument() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
+      <DashboardLayout loading={true}>
+        <div />
+      </DashboardLayout>
     }>
       <NewDocumentContent />
     </Suspense>
