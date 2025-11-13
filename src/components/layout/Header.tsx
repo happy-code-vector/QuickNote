@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SearchBar } from '@/components/search';
 
 interface HeaderProps {
   currentProfile?: {
@@ -24,35 +25,23 @@ export function Header({
   showThemeToggle = true,
 }: HeaderProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const notificationsDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Keyboard shortcut for search (Cmd/Ctrl + K)
+  // Close dropdowns on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-
-      // Close dropdowns on Escape
       if (e.key === 'Escape') {
         setIsProfileOpen(false);
         setIsNotificationsOpen(false);
-        if (isSearchFocused) {
-          searchInputRef.current?.blur();
-        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchFocused]);
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -75,15 +64,6 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/documents?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
-      searchInputRef.current?.blur();
-    }
-  };
-
   const handleLogout = () => {
     // Clear profile from localStorage
     localStorage.removeItem('currentProfile');
@@ -94,34 +74,7 @@ export function Header({
     <header className="sticky top-0 z-30 h-16 bg-surface border-b border-border">
       <div className="h-full px-6 flex items-center justify-between gap-4">
         {/* Search Bar */}
-        {showSearch && (
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
-            <div className="relative">
-              <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-tertiary"
-                style={{ fontSize: '20px' }}
-              >
-                search
-              </span>
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                placeholder="Search documents... (⌘K)"
-                className={`
-                  w-full h-10 pl-10 pr-4 rounded-lg
-                  bg-background border border-border
-                  text-text-primary placeholder:text-text-tertiary
-                  focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-                  transition-all duration-150 ease-in-out
-                `}
-              />
-            </div>
-          </form>
-        )}
+        {showSearch && <SearchBar />}
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
