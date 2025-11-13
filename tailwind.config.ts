@@ -41,6 +41,8 @@ const config: Config = {
       borderRadius: borderRadius,
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 };
 export default config;

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { storage } from '@/lib/storage';
 import { Document } from '@/types';
 import { ArrowLeft, BookOpen, Brain, MessageSquare, GraduationCap } from 'lucide-react';
+import { NotesViewer } from '@/components/notes/NotesViewer';
 
 function DocumentViewContent() {
   const router = useRouter();
@@ -26,120 +27,116 @@ function DocumentViewContent() {
 
   if (!document) return null;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white shadow-md">
-        <div className="max-w-6xl mx-auto px-8 py-4">
-          <button
-            onClick={() => router.push(`/documents/${document.folderId}`)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-3"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back
-          </button>
-          <h1 className="text-2xl font-bold text-gray-800">{document.title}</h1>
-        </div>
-      </div>
+  // Render content based on active tab
+  const renderContent = () => {
+    if (activeTab === 'notes') {
+      return (
+        <NotesViewer
+          title={document.title}
+          content={document.note}
+          onBack={() => router.push(`/documents/${document.folderId}`)}
+        />
+      );
+    }
 
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="flex border-b">
+    // Store current tab to avoid TypeScript narrowing issues
+    const currentTab: 'notes' | 'flashcards' | 'quiz' | 'chat' = activeTab as any;
+
+    // For other tabs, use the original layout
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white shadow-md">
+          <div className="max-w-6xl mx-auto px-8 py-4">
             <button
-              onClick={() => setActiveTab('notes')}
-              className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
-                activeTab === 'notes' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
-              }`}
+              onClick={() => router.push(`/documents/${document.folderId}`)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-3"
             >
-              <BookOpen className="w-5 h-5" />
-              Notes
+              <ArrowLeft className="w-5 h-5" />
+              Back
             </button>
-            <button
-              onClick={() => setActiveTab('flashcards')}
-              className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
-                activeTab === 'flashcards' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Brain className="w-5 h-5" />
-              Flashcards
-            </button>
-            <button
-              onClick={() => setActiveTab('quiz')}
-              className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
-                activeTab === 'quiz' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <GraduationCap className="w-5 h-5" />
-              Quiz
-            </button>
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
-                activeTab === 'chat' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <MessageSquare className="w-5 h-5" />
-              Chat
-            </button>
+            <h1 className="text-2xl font-bold text-gray-800">{document.title}</h1>
           </div>
+        </div>
 
-          <div className="p-8">
-            {activeTab === 'notes' && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold mb-3 text-gray-800">Summary</h2>
-                  <p className="text-gray-700 leading-relaxed">{document.note}</p>
+        <div className="max-w-6xl mx-auto p-8">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="flex border-b">
+              <button
+                onClick={() => setActiveTab('notes')}
+                className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
+                  currentTab === 'notes' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <BookOpen className="w-5 h-5" />
+                Notes
+              </button>
+              <button
+                onClick={() => setActiveTab('flashcards')}
+                className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
+                  currentTab === 'flashcards' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Brain className="w-5 h-5" />
+                Flashcards
+              </button>
+              <button
+                onClick={() => setActiveTab('quiz')}
+                className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
+                  currentTab === 'quiz' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <GraduationCap className="w-5 h-5" />
+                Quiz
+              </button>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`flex-1 px-6 py-4 flex items-center justify-center gap-2 font-medium transition-colors ${
+                  currentTab === 'chat' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Chat
+              </button>
+            </div>
+
+            <div className="p-8">
+              {currentTab === 'flashcards' && (
+                <div className="space-y-4">
+                  {document.flashcards.length > 0 ? (
+                    document.flashcards.map((card, index) => (
+                      <FlashcardItem key={index} question={card.question} answer={card.answer} />
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No flashcards generated</p>
+                  )}
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold mb-3 text-gray-800">Original Content</h2>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    {document.contentType === 'text' ? (
-                      <p className="text-gray-700 whitespace-pre-wrap">{document.contentPath}</p>
-                    ) : document.contentType === 'youtube' ? (
-                      <a href={document.contentPath} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {document.contentPath}
-                      </a>
-                    ) : (
-                      <img src={document.contentPath} alt="Content" className="max-w-full rounded" />
-                    )}
-                  </div>
+              )}
+
+              {currentTab === 'quiz' && (
+                <div className="space-y-6">
+                  {document.quizzes.length > 0 ? (
+                    document.quizzes.map((quiz, index) => (
+                      <QuizItem key={index} quiz={quiz} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No quiz questions generated</p>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === 'flashcards' && (
-              <div className="space-y-4">
-                {document.flashcards.length > 0 ? (
-                  document.flashcards.map((card, index) => (
-                    <FlashcardItem key={index} question={card.question} answer={card.answer} />
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-8">No flashcards generated</p>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'quiz' && (
-              <div className="space-y-6">
-                {document.quizzes.length > 0 ? (
-                  document.quizzes.map((quiz, index) => (
-                    <QuizItem key={index} quiz={quiz} index={index} />
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-8">No quiz questions generated</p>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'chat' && (
-              <div className="text-center py-8 text-gray-500">
-                Chat feature coming soon
-              </div>
-            )}
+              {currentTab === 'chat' && (
+                <div className="text-center py-8 text-gray-500">
+                  Chat feature coming soon
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  return renderContent();
 }
 
 function FlashcardItem({ question, answer }: { question: string; answer: string }) {
