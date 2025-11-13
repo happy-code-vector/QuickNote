@@ -92,6 +92,9 @@ export const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) =
   }
 
   const getDocumentRoute = (doc: Document) => {
+    if (doc.quizzes && doc.quizzes.length > 0) {
+      return `/quiz/${doc.id}`;
+    }
     if (doc.flashcards && doc.flashcards.length > 0) {
       return `/flashcards/${doc.id}`;
     }
