@@ -51,13 +51,11 @@ export default function DashboardPage() {
       }
       setProfile(JSON.parse(currentProfile));
       
-      // Load content for this profile
       const profileData = JSON.parse(currentProfile);
       const storedContent = localStorage.getItem(`content_${profileData.id}`);
       if (storedContent) {
         setContent(JSON.parse(storedContent));
       } else {
-        // Add demo content
         const demoContent = [
           {
             id: Date.now(),
@@ -123,72 +121,46 @@ export default function DashboardPage() {
   if (!profile) return null;
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarExpanded ? "w-64" : "w-20"
-        } bg-white dark:bg-card-dark border-r border-border-light dark:border-border-dark hidden md:flex flex-col transition-all duration-300`}
-      >
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+      <aside className={`${sidebarExpanded ? "w-64" : "w-20"} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col transition-all duration-300`}>
         <div className="flex h-full flex-col justify-between p-4">
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <div className="flex gap-3 items-center">
-                <div className="bg-primary/20 text-primary flex items-center justify-center rounded-lg w-10 h-10">
+                <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center rounded-lg w-10 h-10">
                   <span className="material-symbols-outlined">auto_stories</span>
                 </div>
-                {sidebarExpanded && <h1 className="text-lg font-bold">QuickNote</h1>}
+                {sidebarExpanded && <h1 className="text-lg font-bold text-gray-900 dark:text-white">QuickNote</h1>}
               </div>
-              <button
-                onClick={() => setSidebarExpanded(!sidebarExpanded)}
-                className="text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark"
-              >
+              <button onClick={() => setSidebarExpanded(!sidebarExpanded)} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                 <span className="material-symbols-outlined">menu_open</span>
               </button>
             </div>
 
             <div className="flex items-center gap-3 p-2">
-              <div
-                className={`w-12 h-12 rounded-full bg-gradient-to-br ${
-                  avatarColors[profile.avatar]
-                } flex-shrink-0`}
-              />
+              <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} flex-shrink-0`} />
               {sidebarExpanded && (
                 <div className="flex flex-col">
-                  <h1 className="text-sm font-medium">{profile.name}</h1>
-                  <p className="text-xs text-text-muted-light dark:text-text-muted-dark capitalize">
-                    {profile.type}
-                  </p>
+                  <h1 className="text-sm font-medium text-gray-900 dark:text-white">{profile.name}</h1>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{profile.type}</p>
                 </div>
               )}
             </div>
 
             <nav className="flex flex-col gap-1 mt-4">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary"
-              >
+              <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
                 <span className="material-symbols-outlined fill">home</span>
                 {sidebarExpanded && <p className="text-sm font-medium">Dashboard</p>}
               </Link>
-              <Link
-                href="/notes"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-muted-light dark:text-text-muted-dark"
-              >
+              <Link href="/notes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <span className="material-symbols-outlined">description</span>
                 {sidebarExpanded && <p className="text-sm font-medium">All Notes</p>}
               </Link>
-              <Link
-                href="/flashcards"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-muted-light dark:text-text-muted-dark"
-              >
+              <Link href="/flashcards" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <span className="material-symbols-outlined">style</span>
                 {sidebarExpanded && <p className="text-sm font-medium">All Flashcards</p>}
               </Link>
-              <Link
-                href="/quizzes"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-muted-light dark:text-text-muted-dark"
-              >
+              <Link href="/quizzes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <span className="material-symbols-outlined">quiz</span>
                 {sidebarExpanded && <p className="text-sm font-medium">All Quizzes</p>}
               </Link>
@@ -196,10 +168,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <Link
-              href="/settings"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-muted-light dark:text-text-muted-dark"
-            >
+            <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
               <span className="material-symbols-outlined">settings</span>
               {sidebarExpanded && <p className="text-sm font-medium">Settings</p>}
             </Link>
@@ -207,94 +176,59 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="px-4 sm:px-6 lg:px-10 py-8 w-full max-w-6xl mx-auto">
-          {/* Header */}
           <div className="flex flex-wrap justify-between gap-3 p-4 mb-6">
             <div className="flex min-w-72 flex-col gap-3">
-              <h1 className="text-4xl font-black">What do you want to learn today?</h1>
-              <p className="text-text-muted-light dark:text-text-muted-dark">
-                Generate notes, flashcards, and quizzes from any content
-              </p>
+              <h1 className="text-4xl font-black text-gray-900 dark:text-white">What do you want to learn today?</h1>
+              <p className="text-gray-600 dark:text-gray-400">Generate notes, flashcards, and quizzes from any content</p>
             </div>
           </div>
 
-          {/* Content Upload Section */}
-          <div className="bg-white dark:bg-card-dark rounded-xl p-6 mb-8 border border-border-light dark:border-border-dark">
-            <div className="flex flex-col sm:flex-row h-auto sm:h-12 w-full items-center rounded-xl bg-background-light dark:bg-background-dark p-1.5 gap-2 sm:gap-0 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-800">
+            <div className="flex flex-col sm:flex-row h-auto sm:h-12 w-full items-center rounded-xl bg-gray-100 dark:bg-gray-800 p-1.5 gap-2 sm:gap-0 mb-6">
               {["url", "pdf", "youtube", "image"].map((type) => (
-                <label key={type} className="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-3 py-2 sm:py-0 w-full has-[:checked]:bg-white has-[:checked]:dark:bg-card-dark has-[:checked]:shadow-sm text-sm font-medium">
+                <label key={type} className="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-3 py-2 sm:py-0 w-full has-[:checked]:bg-white has-[:checked]:dark:bg-gray-900 has-[:checked]:shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
                   <span className="capitalize">From {type === "url" ? "URL" : type === "youtube" ? "YouTube" : type.toUpperCase()}</span>
-                  <input
-                    type="radio"
-                    name="content-type"
-                    value={type}
-                    checked={contentType === type}
-                    onChange={(e) => setContentType(e.target.value)}
-                    className="hidden"
-                  />
+                  <input type="radio" name="content-type" value={type} checked={contentType === type} onChange={(e) => setContentType(e.target.value)} className="hidden" />
                 </label>
               ))}
             </div>
 
             <div className="flex gap-3">
-              <input
-                type="text"
-                value={contentInput}
-                onChange={(e) => setContentInput(e.target.value)}
-                placeholder="Paste URL or upload file..."
-                className="flex-1 px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-              <button onClick={generateContent} className="btn-primary px-6">
-                Generate
-              </button>
+              <input type="text" value={contentInput} onChange={(e) => setContentInput(e.target.value)} placeholder="Paste URL or upload file..." className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <button onClick={generateContent} className="btn-primary px-6">Generate</button>
             </div>
           </div>
 
-          {/* Library Section */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <h2 className="text-2xl font-bold">Your Library</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <div className="w-full sm:w-64">
-                <div className="flex items-center border border-border-light dark:border-border-dark rounded-lg bg-white dark:bg-card-dark">
-                  <span className="material-symbols-outlined text-text-muted-light dark:text-text-muted-dark pl-3">
-                    search
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search your library..."
-                    className="flex-1 px-3 py-2 bg-transparent focus:outline-none text-sm"
-                  />
+                <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                  <span className="material-symbols-outlined text-gray-600 dark:text-gray-400 pl-3">search</span>
+                  <input type="text" placeholder="Search your library..." className="flex-1 px-3 py-2 bg-transparent text-gray-900 dark:text-white focus:outline-none text-sm" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Content Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {content.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm hover:shadow-lg transition-shadow"
-              >
+              <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-primary/10 text-primary rounded-md p-1.5">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                       <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
                     </div>
-                    <h3 className="text-base font-semibold flex-1 truncate">{item.title}</h3>
+                    <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
                   </div>
-                  <p className="text-sm text-text-muted-light dark:text-text-muted-dark line-clamp-2">
-                    {item.description}
-                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
                 </div>
-                <div className="border-t border-border-light dark:border-border-dark px-5 py-3 flex justify-between items-center">
-                  <span className="text-xs text-text-muted-light dark:text-text-muted-dark">
-                    {formatDate(item.createdAt)}
-                  </span>
+                <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
                   <div className="flex gap-2">
-                    <button className="text-primary hover:bg-primary/10 p-1 rounded">
+                    <button className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded">
                       <span className="material-symbols-outlined text-lg">visibility</span>
                     </button>
                     <button className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded">

@@ -16,7 +16,6 @@ export default function SignupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Store user data in localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify({
         name: formData.name,
@@ -29,55 +28,55 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 text-primary">
+            <div className="w-10 h-10 text-blue-600">
               <svg fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-bold">QuickNote</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">QuickNote</h1>
           </div>
-          <h2 className="text-3xl font-bold mb-2">Create your account</h2>
-          <p className="text-text-muted-light dark:text-text-muted-dark">Start your learning journey today</p>
+          <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Create your account</h2>
+          <p className="text-gray-600 dark:text-gray-400">Start your learning journey today</p>
         </div>
 
-        <div className="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-8 border border-border-light dark:border-border-dark">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Full Name</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Email</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Password</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Password</label>
                 <input
                   type="password"
                   required
                   minLength={8}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Create a password (min. 8 characters)"
                 />
               </div>
@@ -87,11 +86,11 @@ export default function SignupPage() {
                   required
                   checked={formData.terms}
                   onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
-                  className="w-4 h-4 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary/50"
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500"
                 />
-                <label className="ml-2 text-sm text-text-muted-light dark:text-text-muted-dark">
-                  I agree to the <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                <label className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                  I agree to the <Link href="/terms" className="text-blue-600 hover:underline">Terms</Link> and{" "}
+                  <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
                 </label>
               </div>
             </div>
@@ -102,9 +101,9 @@ export default function SignupPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-text-muted-light dark:text-text-muted-dark">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary font-semibold hover:underline">
+              <Link href="/login" className="text-blue-600 font-semibold hover:underline">
                 Log in
               </Link>
             </p>

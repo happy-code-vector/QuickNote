@@ -43,9 +43,9 @@ export default function ProfileSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-4xl w-full">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white">
           Who's learning today?
         </h1>
 
@@ -63,26 +63,25 @@ export default function ProfileSelectionPage() {
                   } shadow-lg group-hover:shadow-xl transition-shadow`}
                 />
               </div>
-              <p className="font-bold text-lg">{profile.name}</p>
-              <p className="text-sm text-text-muted-light dark:text-text-muted-dark capitalize">
+              <p className="font-bold text-lg text-gray-900 dark:text-white">{profile.name}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                 {profile.type}
               </p>
             </div>
           ))}
 
-          {/* Add Profile Button */}
           <Link
             href="/create-profile"
             className="group cursor-pointer text-center transition-transform hover:scale-105"
           >
             <div className="relative w-full aspect-square mb-3">
-              <div className="w-full h-full rounded-full border-2 border-dashed border-border-light dark:border-border-dark flex items-center justify-center group-hover:border-primary transition-colors">
-                <span className="material-symbols-outlined text-4xl text-text-muted-light dark:text-text-muted-dark group-hover:text-primary transition-colors">
+              <div className="w-full h-full rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center group-hover:border-blue-500 transition-colors bg-white dark:bg-gray-900">
+                <span className="material-symbols-outlined text-4xl text-gray-400 dark:text-gray-600 group-hover:text-blue-500 transition-colors">
                   add
                 </span>
               </div>
             </div>
-            <p className="font-bold text-lg text-primary">Add Profile</p>
+            <p className="font-bold text-lg text-blue-600">Add Profile</p>
           </Link>
         </div>
 

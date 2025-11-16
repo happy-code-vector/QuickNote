@@ -40,21 +40,20 @@ export default function CreateProfilePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Create Your Profile</h1>
-          <p className="text-text-muted-light dark:text-text-muted-dark">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 dark:text-white">Create Your Profile</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             Personalize your learning experience
           </p>
         </div>
 
-        <div className="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-8 border border-border-light dark:border-border-dark">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
-              {/* Avatar Selection */}
               <div>
-                <label className="block text-sm font-medium mb-4">Choose Avatar</label>
+                <label className="block text-sm font-medium mb-4 text-gray-900 dark:text-white">Choose Avatar</label>
                 <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
                   {avatarColors.map((color, index) => (
                     <label key={index} className="cursor-pointer">
@@ -67,29 +66,27 @@ export default function CreateProfilePage() {
                         className="hidden peer"
                       />
                       <div
-                        className={`w-16 h-16 rounded-full bg-gradient-to-br ${color} peer-checked:ring-4 peer-checked:ring-primary transition-all`}
+                        className={`w-16 h-16 rounded-full bg-gradient-to-br ${color} peer-checked:ring-4 peer-checked:ring-blue-500 transition-all`}
                       />
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Profile Name */}
               <div>
-                <label className="block text-sm font-medium mb-2">Profile Name</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Profile Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., Sarah, Math Studies, etc."
                 />
               </div>
 
-              {/* Profile Type */}
               <div>
-                <label className="block text-sm font-medium mb-3">Profile Type</label>
+                <label className="block text-sm font-medium mb-3 text-gray-900 dark:text-white">Profile Type</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="cursor-pointer">
                     <input
@@ -100,12 +97,12 @@ export default function CreateProfilePage() {
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                       className="hidden peer"
                     />
-                    <div className="p-4 rounded-lg border-2 border-border-light dark:border-border-dark peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                    <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-950/30 transition-all bg-white dark:bg-gray-800">
                       <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-primary">school</span>
+                        <span className="material-symbols-outlined text-blue-600">school</span>
                         <div>
-                          <p className="font-semibold">Student</p>
-                          <p className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                          <p className="font-semibold text-gray-900 dark:text-white">Student</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             For learners
                           </p>
                         </div>
@@ -121,12 +118,12 @@ export default function CreateProfilePage() {
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                       className="hidden peer"
                     />
-                    <div className="p-4 rounded-lg border-2 border-border-light dark:border-border-dark peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                    <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-950/30 transition-all bg-white dark:bg-gray-800">
                       <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-primary">family_restroom</span>
+                        <span className="material-symbols-outlined text-blue-600">family_restroom</span>
                         <div>
-                          <p className="font-semibold">Parent</p>
-                          <p className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                          <p className="font-semibold text-gray-900 dark:text-white">Parent</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             For families
                           </p>
                         </div>
@@ -136,13 +133,12 @@ export default function CreateProfilePage() {
                 </div>
               </div>
 
-              {/* Grade Level */}
               <div>
-                <label className="block text-sm font-medium mb-2">Grade Level (Optional)</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Grade Level (Optional)</label>
                 <select
                   value={formData.gradeLevel}
                   onChange={(e) => setFormData({ ...formData, gradeLevel: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select grade level</option>
                   <option value="elementary">Elementary</option>

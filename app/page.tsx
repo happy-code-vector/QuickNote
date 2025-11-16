@@ -1,33 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { Header } from "./components/Header";
 
 export default function Home() {
   return (
     <div className="relative flex min-h-screen w-full flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 text-blue-600">
-                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold">QuickNote</h1>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-sm font-medium hover:text-blue-600 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-sm font-medium hover:text-blue-600 transition-colors">How It Works</a>
-              <Link href="/login" className="text-sm font-medium hover:text-blue-600 transition-colors">Log In</Link>
-              <ThemeToggle />
-              <Link href="/onboarding" className="btn-primary">Get Started</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-16 md:py-24 px-4">
@@ -46,7 +23,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1 w-full">
-              <div className="aspect-video rounded-2xl bg-linear-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
+              <div className="aspect-video rounded-2xl bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
             </div>
           </div>
         </div>
@@ -108,7 +85,7 @@ export default function Home() {
           <h3 className="text-3xl md:text-4xl font-bold text-center mb-12">How It Works</h3>
           <div className="space-y-8">
             <div className="flex gap-6">
-              <div className="shrink-0">
+              <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">1</div>
               </div>
               <div>
@@ -119,7 +96,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-6">
-              <div className="shrink-0">
+              <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">2</div>
               </div>
               <div>
@@ -130,7 +107,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-6">
-              <div className="shrink-0">
+              <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">3</div>
               </div>
               <div>
