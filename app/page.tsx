@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { ThemeToggle } from "./components/ThemeToggle";
 
 export default function Home() {
   return (
@@ -19,6 +22,7 @@ export default function Home() {
               <a href="#features" className="text-sm font-medium hover:text-blue-600 transition-colors">Features</a>
               <a href="#how-it-works" className="text-sm font-medium hover:text-blue-600 transition-colors">How It Works</a>
               <Link href="/login" className="text-sm font-medium hover:text-blue-600 transition-colors">Log In</Link>
+              <ThemeToggle />
               <Link href="/onboarding" className="btn-primary">Get Started</Link>
             </nav>
           </div>
