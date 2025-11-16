@@ -7,9 +7,19 @@ export function Header() {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-    document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    const savedTheme = localStorage.getItem("theme");
+    
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    } else {
+      // Detect system preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const systemTheme = prefersDark ? "dark" : "light";
+      setTheme(systemTheme);
+      document.documentElement.classList.toggle("dark", systemTheme === "dark");
+      localStorage.setItem("theme", systemTheme);
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -29,12 +39,12 @@ export function Header() {
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
             </div>
-            <h1 className="text-xl font-bold">QuickNote</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">QuickNote</h1>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium hover:text-blue-600 transition-colors">Features</a>
-            <a href="#how-it-works" className="text-sm font-medium hover:text-blue-600 transition-colors">How It Works</a>
-            <Link href="/login" className="text-sm font-medium hover:text-blue-600 transition-colors">Log In</Link>
+            <a href="#features" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Features</a>
+            <a href="#how-it-works" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">How It Works</a>
+            <Link href="/login" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Log In</Link>
             <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               {theme === "dark" ? (
                 <span className="material-symbols-outlined text-yellow-500">light_mode</span>

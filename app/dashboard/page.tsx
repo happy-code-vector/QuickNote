@@ -188,7 +188,7 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-800">
             <div className="flex flex-col sm:flex-row h-auto sm:h-12 w-full items-center rounded-xl bg-gray-100 dark:bg-gray-800 p-1.5 gap-2 sm:gap-0 mb-6">
               {["url", "pdf", "youtube", "image"].map((type) => (
-                <label key={type} className="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-3 py-2 sm:py-0 w-full has-[:checked]:bg-white has-[:checked]:dark:bg-gray-900 has-[:checked]:shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label key={type} className="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-3 py-2 sm:py-0 w-full has-checked:bg-white has-checked:dark:bg-gray-900 has-checked:shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
                   <span className="capitalize">From {type === "url" ? "URL" : type === "youtube" ? "YouTube" : type.toUpperCase()}</span>
                   <input type="radio" name="content-type" value={type} checked={contentType === type} onChange={(e) => setContentType(e.target.value)} className="hidden" />
                 </label>

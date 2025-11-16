@@ -57,7 +57,7 @@ export default function OnboardingPage() {
           {currentScreen === 0 && (
             <div className="text-center animate-fade-in">
               <div className="mb-8">
-                <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to QuickNote</h1>
+                <h1 className="text-5xl md:text-6xl font-black mb-4 bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to QuickNote</h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">Turn your content into powerful study materials</p>
               </div>
 
@@ -84,7 +84,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-900 to-blue-900 text-white max-w-2xl mx-auto">
+              <div className="p-6 rounded-2xl bg-linear-to-r from-purple-900 to-blue-900 text-white max-w-2xl mx-auto">
                 <h3 className="font-bold text-xl mb-2">Say Goodbye to Boring Study Sessions!</h3>
                 <p className="text-purple-100">Make learning fun and effective with AI</p>
               </div>
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-4 max-w-3xl mx-auto">
-                <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-800 text-left">
+                <div className="p-6 rounded-2xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-800 text-left">
                   <div className="flex items-start gap-4">
                     <span className="material-symbols-outlined text-3xl text-blue-600">auto_awesome</span>
                     <div>
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
                     </div>
                   </div>
                 </div>
-                <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800 text-left">
+                <div className="p-6 rounded-2xl bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800 text-left">
                   <div className="flex items-start gap-4">
                     <span className="material-symbols-outlined text-3xl text-purple-600">psychology</span>
                     <div>
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
                     </div>
                   </div>
                 </div>
-                <div className="p-6 rounded-2xl bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 border-2 border-green-200 dark:border-green-800 text-left">
+                <div className="p-6 rounded-2xl bg-linear-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 border-2 border-green-200 dark:border-green-800 text-left">
                   <div className="flex items-start gap-4">
                     <span className="material-symbols-outlined text-3xl text-green-600">trending_up</span>
                     <div>
