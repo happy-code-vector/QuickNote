@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { generateContentFromSource, getSourceTypeLabel } from "../lib/mockAI";
 import { ProcessingModal } from "../components/ProcessingModal";
 
 const avatarColors: Record<string, string> = {
@@ -106,39 +105,71 @@ export default function DashboardPage() {
       const source = selectedFile || contentInput;
       const sourceText = selectedFile ? selectedFile.name : contentInput;
 
-      // Call mock AI to generate content
-      const generated = await generateContentFromSource(
-        contentType as "url" | "pdf" | "youtube" | "image",
-        source
-      );
+      let contentToAnalyze = contentInput;
 
-      // Create content items for each type
+      // For files, read the content (for demo, we'll use filename)
+      if (selectedFile) {
+        if (contentType === "image") {
+          contentToAnalyze = `Image file: ${selectedFile.name}`;
+        } else if (contentType === "pdf") {
+          contentToAnalyze = `PDF file: ${selectedFile.name}`;
+        }
+      }
+
+      // Generate all three types in parallel
+      const [noteResult, flashcardResult, quizResult] = await Promise.all([
+        fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "note", content: contentToAnalyze }),
+        }).then((r) => r.json()),
+        fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "flashcard", content: contentToAnalyze }),
+        }).then((r) => r.json()),
+        fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "quiz", content: contentToAnalyze }),
+        }).then((r) => r.json()),
+      ]);
+
+      // Create content items with generated data
       const timestamp = Date.now();
-      const sourceLabel = getSourceTypeLabel(contentType);
+      const sourceLabel = contentType.toUpperCase();
+      
+      const newItems: ContentItem[] = [];
 
-      const newItems: ContentItem[] = [
-        {
+      if (noteResult.success) {
+        newItems.push({
           id: timestamp,
-          title: `Notes: ${sourceText.substring(0, 30)}...`,
+          title: noteResult.data.title || `Notes: ${sourceText.substring(0, 30)}...`,
           description: `AI-generated notes from ${sourceLabel}`,
           type: "notes",
           createdAt: new Date().toISOString(),
-        },
-        {
+        });
+      }
+
+      if (flashcardResult.success) {
+        newItems.push({
           id: timestamp + 1,
           title: `Flashcards: ${sourceText.substring(0, 30)}...`,
-          description: `${generated.flashcards.length} flashcards from ${sourceLabel}`,
+          description: `${flashcardResult.data.flashcards?.length || 0} flashcards from ${sourceLabel}`,
           type: "flashcards",
           createdAt: new Date().toISOString(),
-        },
-        {
+        });
+      }
+
+      if (quizResult.success) {
+        newItems.push({
           id: timestamp + 2,
           title: `Quiz: ${sourceText.substring(0, 30)}...`,
-          description: `${generated.quiz.length} questions from ${sourceLabel}`,
+          description: `${quizResult.data.quizzes?.length || 0} questions from ${sourceLabel}`,
           type: "quiz",
           createdAt: new Date().toISOString(),
-        },
-      ];
+        });
+      }
 
       const updatedContent = [...newItems, ...content];
       setContent(updatedContent);
