@@ -8,40 +8,24 @@ export function Header() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    
     if (savedTheme) {
       setTheme(savedTheme);
-      if (savedTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
     } else {
-      // Detect system preference
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const systemTheme = prefersDark ? "dark" : "light";
-      setTheme(systemTheme);
-      if (systemTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      }
-      localStorage.setItem("theme", systemTheme);
+      setTheme(prefersDark ? "dark" : "light");
     }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
-    console.log("Toggling theme from", theme, "to", newTheme);
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
-      console.log("Added dark class to html element");
     } else {
       document.documentElement.classList.remove("dark");
-      console.log("Removed dark class from html element");
     }
-    console.log("HTML classes:", document.documentElement.className);
   };
 
   return (
@@ -62,8 +46,8 @@ export function Header() {
             <Link href="/login" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Log In</Link>
             <button 
               onClick={toggleTheme} 
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border-2 border-blue-500"
-              title={`Current: ${theme}, Click to toggle`}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle theme"
             >
               {theme === "dark" ? (
                 <span className="material-symbols-outlined text-yellow-500">light_mode</span>
