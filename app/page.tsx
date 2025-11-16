@@ -23,7 +23,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1 w-full">
-              <div className="aspect-video rounded-2xl bg-linear-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
+              <div className="aspect-video rounded-2xl bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
             </div>
           </div>
         </div>

@@ -58,7 +58,7 @@ export default function ProfileSelectionPage() {
             >
               <div className="relative w-full aspect-square mb-3">
                 <div
-                  className={`w-full h-full rounded-full bg-linear-to-br ${
+                  className={`w-full h-full rounded-full bg-gradient-to-br ${
                     avatarColors[profile.avatar]
                   } shadow-lg group-hover:shadow-xl transition-shadow`}
                 />

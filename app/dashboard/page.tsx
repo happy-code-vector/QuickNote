@@ -138,7 +138,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3 p-2">
-              <div className={`w-12 h-12 rounded-full bg-linear-to-br ${avatarColors[profile.avatar]} shrink-0`} />
+              <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0`} />
               {sidebarExpanded && (
                 <div className="flex flex-col">
                   <h1 className="text-sm font-medium text-gray-900 dark:text-white">{profile.name}</h1>

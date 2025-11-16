@@ -66,7 +66,7 @@ export default function CreateProfilePage() {
                         className="hidden peer"
                       />
                       <div
-                        className={`w-16 h-16 rounded-full bg-linear-to-br ${color} peer-checked:ring-4 peer-checked:ring-blue-500 transition-all`}
+                        className={`w-16 h-16 rounded-full bg-gradient-to-br ${color} peer-checked:ring-4 peer-checked:ring-blue-500 transition-all`}
                       />
                     </label>
                   ))}
