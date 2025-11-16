@@ -11,13 +11,19 @@ export function Header() {
     
     if (savedTheme) {
       setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     } else {
       // Detect system preference
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const systemTheme = prefersDark ? "dark" : "light";
       setTheme(systemTheme);
-      document.documentElement.classList.toggle("dark", systemTheme === "dark");
+      if (systemTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
       localStorage.setItem("theme", systemTheme);
     }
   }, []);
@@ -26,7 +32,12 @@ export function Header() {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   };
 
   return (

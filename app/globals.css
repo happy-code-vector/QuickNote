@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    color-scheme: light;
+    background-color: white;
+    color: rgb(17 24 39);
+  }
+  
+  :root.dark {
+    color-scheme: dark;
+    background-color: rgb(3 7 18);
+    color: white;
+  }
+  
+  html {
+    background-color: white;
+  }
+  
+  html.dark {
+    background-color: rgb(3 7 18);
+  }
+  
+  body {
+    background-color: inherit;
+    color: inherit;
+  }
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
