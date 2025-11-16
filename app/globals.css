@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -6,21 +8,21 @@
     background-color: white;
     color: rgb(17 24 39);
   }
-  
+
   :root.dark {
     color-scheme: dark;
     background-color: rgb(3 7 18);
     color: white;
   }
-  
+
   html {
     background-color: white;
   }
-  
+
   html.dark {
     background-color: rgb(3 7 18);
   }
-  
+
   body {
     background-color: inherit;
     color: inherit;
@@ -97,6 +99,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -30,14 +30,18 @@ export function Header() {
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
+    console.log("Toggling theme from", theme, "to", newTheme);
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
+      console.log("Added dark class to html element");
     } else {
       document.documentElement.classList.remove("dark");
+      console.log("Removed dark class from html element");
     }
+    console.log("HTML classes:", document.documentElement.className);
   };
 
   return (
@@ -56,11 +60,15 @@ export function Header() {
             <a href="#features" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">How It Works</a>
             <Link href="/login" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Log In</Link>
-            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border-2 border-blue-500"
+              title={`Current: ${theme}, Click to toggle`}
+            >
               {theme === "dark" ? (
                 <span className="material-symbols-outlined text-yellow-500">light_mode</span>
               ) : (
-                <span className="material-symbols-outlined text-gray-700">dark_mode</span>
+                <span className="material-symbols-outlined text-gray-700 dark:text-gray-300">dark_mode</span>
               )}
             </button>
             <Link href="/onboarding" className="btn-primary">Get Started</Link>

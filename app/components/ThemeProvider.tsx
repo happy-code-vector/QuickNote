@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem("theme") as Theme | null;
-    
+
     if (savedTheme) {
       setTheme(savedTheme);
       if (savedTheme === "dark") {
@@ -40,14 +40,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
+    console.log("[ThemeProvider] Toggling theme from", theme, "to", newTheme);
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    
+
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
+      console.log("[ThemeProvider] Added dark class");
     } else {
       document.documentElement.classList.remove("dark");
+      console.log("[ThemeProvider] Removed dark class");
     }
+    console.log("[ThemeProvider] HTML classes:", document.documentElement.className);
   };
 
   if (!mounted) {
