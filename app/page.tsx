@@ -46,7 +46,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex-1 w-full">
-              <div className="aspect-video rounded-2xl bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
+              <div className="aspect-video rounded-2xl bg-linear-to-br from-blue-100 via-purple-100 to-indigo-200 dark:from-blue-900/50 dark:via-purple-900/50 dark:to-indigo-900/50 shadow-2xl"></div>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function Home() {
           <h3 className="text-3xl md:text-4xl font-bold text-center mb-12">How It Works</h3>
           <div className="space-y-8">
             <div className="flex gap-6">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">1</div>
               </div>
               <div>
@@ -119,7 +119,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-6">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">2</div>
               </div>
               <div>
@@ -130,7 +130,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-6">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-lg">3</div>
               </div>
               <div>
