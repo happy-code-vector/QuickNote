@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [contentType, setContentType] = useState("url");
   const [contentInput, setContentInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -85,13 +86,22 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const generateContent = () => {
-    if (!contentInput.trim()) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setContentInput(file.name);
+    }
+  };
 
+  const generateContent = () => {
+    if (!contentInput.trim() && !selectedFile) return;
+
+    const sourceText = selectedFile ? selectedFile.name : contentInput;
     const newContent: ContentItem = {
       id: Date.now(),
       title: `Study Material from ${contentType.toUpperCase()}`,
-      description: `AI-generated study materials from your ${contentType} content`,
+      description: `AI-generated study materials from: ${sourceText}`,
       type: "notes",
       createdAt: new Date().toISOString(),
     };
@@ -104,6 +114,7 @@ export default function DashboardPage() {
     }
     
     setContentInput("");
+    setSelectedFile(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -195,9 +206,57 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            <div className="flex gap-3">
-              <input type="text" value={contentInput} onChange={(e) => setContentInput(e.target.value)} placeholder="Paste URL or upload file..." className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <button onClick={generateContent} className="btn-primary px-6">Generate</button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {contentType === "url" || contentType === "youtube" ? (
+                <input 
+                  type="text" 
+                  value={contentInput} 
+                  onChange={(e) => setContentInput(e.target.value)} 
+                  placeholder={contentType === "url" ? "Paste URL here..." : "Paste YouTube URL here..."} 
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                />
+              ) : (
+                <div className="flex-1 relative">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    accept={contentType === "pdf" ? ".pdf" : "image/*"}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="flex items-center justify-between w-full px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-blue-500 dark:hover:border-blue-500 cursor-pointer transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-gray-400">upload_file</span>
+                      <span className="text-sm">
+                        {selectedFile ? selectedFile.name : `Click to upload ${contentType.toUpperCase()}`}
+                      </span>
+                    </span>
+                    {selectedFile && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedFile(null);
+                          setContentInput("");
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <span className="material-symbols-outlined text-sm">close</span>
+                      </button>
+                    )}
+                  </label>
+                </div>
+              )}
+              <button 
+                onClick={generateContent} 
+                disabled={!contentInput.trim() && !selectedFile}
+                className="btn-primary px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Generate
+              </button>
             </div>
           </div>
 
