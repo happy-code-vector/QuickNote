@@ -62,22 +62,22 @@ export default function OnboardingPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-w-3xl mx-auto">
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-2 border-blue-200 dark:border-blue-800">
+                <div className="p-6 rounded-2xl bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-2 border-blue-200 dark:border-blue-800">
                   <span className="material-symbols-outlined text-4xl text-blue-600 mb-2">description</span>
                   <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">Instant Notes</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered summaries</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-2 border-purple-200 dark:border-purple-800">
+                <div className="p-6 rounded-2xl bg-linear-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-2 border-purple-200 dark:border-purple-800">
                   <span className="material-symbols-outlined text-4xl text-purple-600 mb-2">style</span>
                   <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">Flashcards</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Interactive learning</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-2 border-green-200 dark:border-green-800">
+                <div className="p-6 rounded-2xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-2 border-green-200 dark:border-green-800">
                   <span className="material-symbols-outlined text-4xl text-green-600 mb-2">quiz</span>
                   <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">Quizzes</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Test your knowledge</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50 border-2 border-orange-200 dark:border-orange-800">
+                <div className="p-6 rounded-2xl bg-linear-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50 border-2 border-orange-200 dark:border-orange-800">
                   <span className="material-symbols-outlined text-4xl text-orange-600 mb-2">groups</span>
                   <h3 className="font-bold text-lg mb-1 text-gray-900 dark:text-white">Study Collaborate</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Learn together</p>
@@ -244,7 +244,7 @@ export default function OnboardingPage() {
               </div>
 
               <div className="max-w-2xl mx-auto">
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 border-2 border-yellow-200 dark:border-yellow-800">
+                <div className="p-8 rounded-2xl bg-linear-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 border-2 border-yellow-200 dark:border-yellow-800">
                   <div className="flex justify-center gap-2 mb-6">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <span key={star} className="material-symbols-outlined text-5xl text-yellow-500 fill">star</span>
