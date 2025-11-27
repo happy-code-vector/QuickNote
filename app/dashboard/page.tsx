@@ -36,10 +36,22 @@ interface ContentItem {
   description: string;
   type: string;
   createdAt: string;
-  data?: any; // Store the actual AI-generated content
-  sourceId?: string; // Group items by source material
-  sourceName?: string; // Display name of the source
-  sourceType?: string; // url, pdf, youtube, image
+  data?: any;
+  sourceId?: string;
+  sourceName?: string;
+  sourceType?: string;
+}
+
+// Document structure matching iOS app
+interface Document {
+  id: number;
+  title: string;
+  contentType: string; // youtube, pdf, image, url
+  contentPath: string; // URL or file path
+  note?: any; // NoteResponse data
+  flashcards?: Array<{ question: string; answer: string }>;
+  quizzes?: any[];
+  createdAt: string;
 }
 
 export default function DashboardPage() {
@@ -56,7 +68,7 @@ export default function DashboardPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"item" | "material">("item");
+  const [viewMode, setViewMode] = useState<"item" | "material">("material"); // Default to material view like iOS
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
 
   const handleDeleteClick = (itemId: number) => {
@@ -92,6 +104,9 @@ export default function DashboardPage() {
       if (storedContent) {
         setContent(JSON.parse(storedContent));
       } else {
+        // Demo content with source information
+        const demoSourceId1 = "source_demo_1";
+        const demoSourceId2 = "source_demo_2";
         const demoContent = [
           {
             id: Date.now(),
@@ -99,20 +114,59 @@ export default function DashboardPage() {
             description: "Comprehensive notes on the fundamentals of psychology",
             type: "notes",
             createdAt: new Date().toISOString(),
+            sourceId: demoSourceId1,
+            sourceName: "Psychology Textbook Chapter 1",
+            sourceType: "pdf",
           },
           {
             id: Date.now() + 1,
-            title: "History of Rome Flashcards",
-            description: "50 flashcards covering key events and figures from the Roman Empire",
+            title: "Psychology Flashcards",
+            description: "50 flashcards covering key concepts from psychology",
             type: "flashcards",
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            createdAt: new Date().toISOString(),
+            sourceId: demoSourceId1,
+            sourceName: "Psychology Textbook Chapter 1",
+            sourceType: "pdf",
           },
           {
             id: Date.now() + 2,
-            title: "Biology 101 Quiz",
-            description: "A 20-question quiz on cellular biology",
+            title: "Psychology Quiz",
+            description: "A 20-question quiz on psychology fundamentals",
             type: "quiz",
-            createdAt: new Date(Date.now() - 172800000).toISOString(),
+            createdAt: new Date().toISOString(),
+            sourceId: demoSourceId1,
+            sourceName: "Psychology Textbook Chapter 1",
+            sourceType: "pdf",
+          },
+          {
+            id: Date.now() + 3,
+            title: "History of Rome Notes",
+            description: "Detailed notes on the Roman Empire",
+            type: "notes",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            sourceId: demoSourceId2,
+            sourceName: "Roman History Documentary",
+            sourceType: "youtube",
+          },
+          {
+            id: Date.now() + 4,
+            title: "Roman Empire Flashcards",
+            description: "Key events and figures from Roman history",
+            type: "flashcards",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            sourceId: demoSourceId2,
+            sourceName: "Roman History Documentary",
+            sourceType: "youtube",
+          },
+          {
+            id: Date.now() + 5,
+            title: "Roman History Quiz",
+            description: "Test your knowledge of the Roman Empire",
+            type: "quiz",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            sourceId: demoSourceId2,
+            sourceName: "Roman History Documentary",
+            sourceType: "youtube",
           },
         ];
         setContent(demoContent);
