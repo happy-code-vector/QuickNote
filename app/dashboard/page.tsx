@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProcessingModal } from "../components/ProcessingModal";
+import { useToast } from "../components/ToastContainer";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -37,6 +38,7 @@ interface ContentItem {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [content, setContent] = useState<ContentItem[]>([]);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -100,6 +102,7 @@ export default function DashboardPage() {
     if (!contentInput.trim() && !selectedFile) return;
 
     setIsProcessing(true);
+    showToast("Starting content generation...", "info");
 
     try {
       const source = selectedFile || contentInput;
@@ -117,29 +120,54 @@ export default function DashboardPage() {
       }
 
       // Generate all three types in parallel
-      const [noteResult, flashcardResult, quizResult] = await Promise.all([
+      const [noteResponse, flashcardResponse, quizResponse] = await Promise.all([
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "note", content: contentToAnalyze }),
-        }).then((r) => r.json()),
+        }),
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "flashcard", content: contentToAnalyze }),
-        }).then((r) => r.json()),
+        }),
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "quiz", content: contentToAnalyze }),
-        }).then((r) => r.json()),
+        }),
       ]);
+
+      // Parse all responses
+      const [noteResult, flashcardResult, quizResult] = await Promise.all([
+        noteResponse.json().catch(() => ({ success: false, message: "Failed to parse notes response" })),
+        flashcardResponse.json().catch(() => ({ success: false, message: "Failed to parse flashcards response" })),
+        quizResponse.json().catch(() => ({ success: false, message: "Failed to parse quiz response" })),
+      ]);
+
+      // Check for HTTP errors first
+      if (!noteResponse.ok || !flashcardResponse.ok || !quizResponse.ok) {
+        const errorMessages = [];
+        if (!noteResponse.ok) {
+          errorMessages.push(noteResult.message || noteResult.error || `Notes: HTTP ${noteResponse.status}`);
+        }
+        if (!flashcardResponse.ok) {
+          errorMessages.push(flashcardResult.message || flashcardResult.error || `Flashcards: HTTP ${flashcardResponse.status}`);
+        }
+        if (!quizResponse.ok) {
+          errorMessages.push(quizResult.message || quizResult.error || `Quiz: HTTP ${quizResponse.status}`);
+        }
+
+        showToast(errorMessages[0] || "Failed to generate content. Please try again.", "error");
+        return;
+      }
 
       // Create content items with generated data
       const timestamp = Date.now();
       const sourceLabel = contentType.toUpperCase();
-      
+
       const newItems: ContentItem[] = [];
+      const errors: string[] = [];
 
       if (noteResult.success) {
         newItems.push({
@@ -149,6 +177,8 @@ export default function DashboardPage() {
           type: "notes",
           createdAt: new Date().toISOString(),
         });
+      } else {
+        errors.push(noteResult.message || noteResult.error || "Notes generation failed");
       }
 
       if (flashcardResult.success) {
@@ -159,6 +189,8 @@ export default function DashboardPage() {
           type: "flashcards",
           createdAt: new Date().toISOString(),
         });
+      } else {
+        errors.push(flashcardResult.message || flashcardResult.error || "Flashcards generation failed");
       }
 
       if (quizResult.success) {
@@ -169,6 +201,14 @@ export default function DashboardPage() {
           type: "quiz",
           createdAt: new Date().toISOString(),
         });
+      } else {
+        errors.push(quizResult.message || quizResult.error || "Quiz generation failed");
+      }
+
+      // If no items were generated, show first error
+      if (newItems.length === 0) {
+        showToast(errors[0] || "Failed to generate any content. Please try again.", "error");
+        return;
       }
 
       const updatedContent = [...newItems, ...content];
@@ -178,11 +218,18 @@ export default function DashboardPage() {
         localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
       }
 
+      // Show success with warning if some failed
+      if (errors.length > 0) {
+        showToast(`Generated ${newItems.length} materials, but ${errors.length} failed`, "warning");
+      } else {
+        showToast(`Successfully generated ${newItems.length} study materials!`, "success");
+      }
+
       setContentInput("");
       setSelectedFile(null);
     } catch (error) {
       console.error("Error generating content:", error);
-      alert("Failed to generate content. Please try again.");
+      showToast("Failed to generate content. Please try again.", "error");
     } finally {
       setIsProcessing(false);
     }

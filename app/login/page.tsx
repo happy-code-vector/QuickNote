@@ -3,31 +3,44 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useToast } from "../components/ToastContainer";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     remember: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (typeof window !== "undefined") {
-      localStorage.setItem("user", JSON.stringify({
-        name: "Demo User",
-        email: formData.email,
-        loginAt: new Date().toISOString(),
-      }));
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
       
-      const profiles = localStorage.getItem("profiles");
-      if (profiles && JSON.parse(profiles).length > 0) {
-        router.push("/profile-selection");
-      } else {
-        router.push("/create-profile");
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user", JSON.stringify({
+          name: "Demo User",
+          email: formData.email,
+          loginAt: new Date().toISOString(),
+        }));
+        
+        const profiles = localStorage.getItem("profiles");
+        showToast("Login successful!", "success");
+        
+        setTimeout(() => {
+          if (profiles && JSON.parse(profiles).length > 0) {
+            router.push("/profile-selection");
+          } else {
+            router.push("/create-profile");
+          }
+        }, 500);
       }
+    } catch (error) {
+      showToast("Login failed. Please check your credentials.", "error");
     }
   };
 

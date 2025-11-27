@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "../components/ToastContainer";
 
 const avatarColors = [
   "from-blue-400 to-purple-400",
@@ -14,6 +15,7 @@ const avatarColors = [
 
 export default function CreateProfilePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     avatar: "avatar-1",
     name: "",
@@ -21,22 +23,30 @@ export default function CreateProfilePage() {
     gradeLevel: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (typeof window !== "undefined") {
-      const profiles = JSON.parse(localStorage.getItem("profiles") || "[]");
-      const newProfile = {
-        ...formData,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-      };
-      profiles.push(newProfile);
-      localStorage.setItem("profiles", JSON.stringify(profiles));
-      localStorage.setItem("currentProfile", JSON.stringify(newProfile));
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      if (typeof window !== "undefined") {
+        const profiles = JSON.parse(localStorage.getItem("profiles") || "[]");
+        const newProfile = {
+          ...formData,
+          id: Date.now(),
+          createdAt: new Date().toISOString(),
+        };
+        profiles.push(newProfile);
+        localStorage.setItem("profiles", JSON.stringify(profiles));
+        localStorage.setItem("currentProfile", JSON.stringify(newProfile));
+      }
+      
+      showToast(`Profile "${formData.name}" created successfully!`, "success");
+      setTimeout(() => router.push("/profile-selection"), 500);
+    } catch (error) {
+      showToast("Failed to create profile. Please try again.", "error");
     }
-    
-    router.push("/profile-selection");
   };
 
   return (

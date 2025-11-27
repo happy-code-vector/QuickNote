@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useToast } from "../components/ToastContainer";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,18 +15,26 @@ export default function SignupPage() {
     terms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (typeof window !== "undefined") {
-      localStorage.setItem("user", JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        createdAt: new Date().toISOString(),
-      }));
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user", JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          createdAt: new Date().toISOString(),
+        }));
+      }
+      
+      showToast("Account created successfully!", "success");
+      setTimeout(() => router.push("/create-profile"), 500);
+    } catch (error) {
+      showToast("Failed to create account. Please try again.", "error");
     }
-    
-    router.push("/create-profile");
   };
 
   return (
