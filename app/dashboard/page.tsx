@@ -455,11 +455,11 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 {/* View Mode Toggle */}
-                <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-11">
                   <button
                     onClick={() => {
                       setViewMode("item");
@@ -494,7 +494,7 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 <div className="w-full sm:w-64">
-                  <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                  <div className="flex items-center h-11 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
                     <span className="material-symbols-outlined text-gray-600 dark:text-gray-400 pl-3">search</span>
                     <input type="text" placeholder="Search your library..." className="flex-1 px-3 py-2 bg-transparent text-gray-900 dark:text-white focus:outline-none text-sm" />
                   </div>
