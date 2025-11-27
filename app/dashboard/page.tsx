@@ -37,6 +37,9 @@ interface ContentItem {
   type: string;
   createdAt: string;
   data?: any; // Store the actual AI-generated content
+  sourceId?: string; // Group items by source material
+  sourceName?: string; // Display name of the source
+  sourceType?: string; // url, pdf, youtube, image
 }
 
 export default function DashboardPage() {
@@ -53,6 +56,8 @@ export default function DashboardPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"item" | "material">("item");
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -191,6 +196,8 @@ export default function DashboardPage() {
       // Create content items with generated data
       const timestamp = Date.now();
       const sourceLabel = contentType.toUpperCase();
+      const sourceId = `source_${timestamp}`;
+      const sourceName = sourceText.length > 50 ? sourceText.substring(0, 50) + "..." : sourceText;
 
       const newItems: ContentItem[] = [];
       const errors: string[] = [];
@@ -202,7 +209,10 @@ export default function DashboardPage() {
           description: `AI-generated notes from ${sourceLabel}`,
           type: "notes",
           createdAt: new Date().toISOString(),
-          data: noteResult.data, // Store the actual content
+          data: noteResult.data,
+          sourceId,
+          sourceName,
+          sourceType: contentType,
         });
       } else {
         errors.push(noteResult.message || noteResult.error || "Notes generation failed");
@@ -215,6 +225,9 @@ export default function DashboardPage() {
           description: `${flashcardResult.data.flashcards?.length || 0} flashcards from ${sourceLabel}`,
           type: "flashcards",
           createdAt: new Date().toISOString(),
+          sourceId,
+          sourceName,
+          sourceType: contentType,
           data: flashcardResult.data, // Store the actual content
         });
       } else {
@@ -228,7 +241,10 @@ export default function DashboardPage() {
           description: `${quizResult.data.quizzes?.length || 0} questions from ${sourceLabel}`,
           type: "quiz",
           createdAt: new Date().toISOString(),
-          data: quizResult.data, // Store the actual content
+          data: quizResult.data,
+          sourceId,
+          sourceName,
+          sourceType: contentType,
         });
       } else {
         errors.push(quizResult.message || quizResult.error || "Quiz generation failed");
@@ -274,6 +290,41 @@ export default function DashboardPage() {
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
+  };
+
+  // Group content by source material
+  const groupedBySource = content.reduce((acc, item) => {
+    const sourceId = item.sourceId || "unknown";
+    if (!acc[sourceId]) {
+      acc[sourceId] = {
+        sourceId,
+        sourceName: item.sourceName || "Unknown Source",
+        sourceType: item.sourceType || "url",
+        items: [],
+        createdAt: item.createdAt,
+      };
+    }
+    acc[sourceId].items.push(item);
+    return acc;
+  }, {} as Record<string, { sourceId: string; sourceName: string; sourceType: string; items: ContentItem[]; createdAt: string }>);
+
+  const sources = Object.values(groupedBySource);
+
+  // Get items to display based on view mode
+  const displayItems = viewMode === "item" 
+    ? content 
+    : selectedSourceId 
+      ? groupedBySource[selectedSourceId]?.items || []
+      : [];
+
+  const getSourceIcon = (sourceType: string) => {
+    switch (sourceType) {
+      case "url": return "link";
+      case "pdf": return "picture_as_pdf";
+      case "youtube": return "play_circle";
+      case "image": return "image";
+      default: return "article";
+    }
   };
 
   if (!profile) return null;
@@ -416,6 +467,41 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                  <button
+                    onClick={() => {
+                      setViewMode("item");
+                      setSelectedSourceId(null);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "item"
+                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-lg">grid_view</span>
+                      Items
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setViewMode("material");
+                      setSelectedSourceId(null);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "material"
+                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-lg">folder</span>
+                      Materials
+                    </span>
+                  </button>
+                </div>
                 <div className="w-full sm:w-64">
                   <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
                     <span className="material-symbols-outlined text-gray-600 dark:text-gray-400 pl-3">search</span>
@@ -425,41 +511,127 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {content.map((item) => (
-                <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
-                        <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
+            {/* Material View - Show Sources */}
+            {viewMode === "material" && !selectedSourceId && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sources.map((source) => (
+                  <div
+                    key={source.sourceId}
+                    onClick={() => setSelectedSourceId(source.sourceId)}
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer hover:border-blue-500 dark:hover:border-blue-500"
+                  >
+                    <div className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-md p-1.5">
+                          <span className="material-symbols-outlined">{getSourceIcon(source.sourceType)}</span>
+                        </div>
+                        <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{source.sourceName}</h3>
                       </div>
-                      <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
+                      <div className="flex gap-2 flex-wrap">
+                        {source.items.map((item) => (
+                          <span key={item.id} className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize">
+                            {item.type}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
-                  </div>
-                  <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedContent(item);
-                          setIsViewModalOpen(true);
-                        }}
-                        className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
-                      >
-                        <span className="material-symbols-outlined text-lg">visibility</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(item.id)}
-                        className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
-                      >
-                        <span className="material-symbols-outlined text-lg">delete</span>
-                      </button>
+                    <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(source.createdAt)}</span>
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {source.items.length} item{source.items.length !== 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+
+            {/* Material View - Show Items from Selected Source */}
+            {viewMode === "material" && selectedSourceId && (
+              <div>
+                <button
+                  onClick={() => setSelectedSourceId(null)}
+                  className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  <span className="material-symbols-outlined">arrow_back</span>
+                  Back to Materials
+                </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {displayItems.map((item) => (
+                    <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                      <div className="p-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
+                            <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
+                          </div>
+                          <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
+                      </div>
+                      <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedContent(item);
+                              setIsViewModalOpen(true);
+                            }}
+                            className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
+                          >
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(item.id)}
+                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                          >
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Item View - Show All Items */}
+            {viewMode === "item" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {content.map((item) => (
+                  <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                    <div className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
+                          <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
+                        </div>
+                        <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedContent(item);
+                            setIsViewModalOpen(true);
+                          }}
+                          className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
+                        >
+                          <span className="material-symbols-outlined text-lg">visibility</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(item.id)}
+                          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                        >
+                          <span className="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
