@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProcessingModal } from "../components/ProcessingModal";
 import { useToast } from "../components/ToastContainer";
+import { ContentViewModal } from "../components/ContentViewModal";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -34,6 +35,7 @@ interface ContentItem {
   description: string;
   type: string;
   createdAt: string;
+  data?: any; // Store the actual AI-generated content
 }
 
 export default function DashboardPage() {
@@ -46,6 +48,8 @@ export default function DashboardPage() {
   const [contentInput, setContentInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -176,6 +180,7 @@ export default function DashboardPage() {
           description: `AI-generated notes from ${sourceLabel}`,
           type: "notes",
           createdAt: new Date().toISOString(),
+          data: noteResult.data, // Store the actual content
         });
       } else {
         errors.push(noteResult.message || noteResult.error || "Notes generation failed");
@@ -188,6 +193,7 @@ export default function DashboardPage() {
           description: `${flashcardResult.data.flashcards?.length || 0} flashcards from ${sourceLabel}`,
           type: "flashcards",
           createdAt: new Date().toISOString(),
+          data: flashcardResult.data, // Store the actual content
         });
       } else {
         errors.push(flashcardResult.message || flashcardResult.error || "Flashcards generation failed");
@@ -200,6 +206,7 @@ export default function DashboardPage() {
           description: `${quizResult.data.quizzes?.length || 0} questions from ${sourceLabel}`,
           type: "quiz",
           createdAt: new Date().toISOString(),
+          data: quizResult.data, // Store the actual content
         });
       } else {
         errors.push(quizResult.message || quizResult.error || "Quiz generation failed");
@@ -411,7 +418,13 @@ export default function DashboardPage() {
                   <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
                     <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
                     <div className="flex gap-2">
-                      <button className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded">
+                      <button
+                        onClick={() => {
+                          setSelectedContent(item);
+                          setIsViewModalOpen(true);
+                        }}
+                        className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
+                      >
                         <span className="material-symbols-outlined text-lg">visibility</span>
                       </button>
                       <button className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded">
@@ -425,6 +438,15 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      <ContentViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setSelectedContent(null);
+        }}
+        content={selectedContent}
+      />
     </>
   );
 }
