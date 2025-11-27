@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ProcessingModal } from "../components/ProcessingModal";
 import { useToast } from "../components/ToastContainer";
 import { ContentViewModal } from "../components/ContentViewModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -50,6 +51,27 @@ export default function DashboardPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleDeleteClick = (itemId: number) => {
+    setDeleteItemId(itemId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteItemId === null) return;
+
+    const updatedContent = content.filter((item) => item.id !== deleteItemId);
+    setContent(updatedContent);
+
+    if (profile && typeof window !== "undefined") {
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+    }
+
+    showToast("Item deleted successfully", "success");
+    setDeleteItemId(null);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -427,7 +449,10 @@ export default function DashboardPage() {
                       >
                         <span className="material-symbols-outlined text-lg">visibility</span>
                       </button>
-                      <button className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded">
+                      <button
+                        onClick={() => handleDeleteClick(item.id)}
+                        className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                      >
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
@@ -446,6 +471,20 @@ export default function DashboardPage() {
           setSelectedContent(null);
         }}
         content={selectedContent}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteItemId(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Item"
+        message="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
       />
     </>
   );

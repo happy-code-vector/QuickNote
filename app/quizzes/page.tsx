@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ContentViewModal } from "../components/ContentViewModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 interface ContentItem {
   id: number;
@@ -20,6 +21,30 @@ export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<ContentItem[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<ContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleDeleteClick = (itemId: number) => {
+    setDeleteItemId(itemId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteItemId === null) return;
+
+    const updatedQuizzes = quizzes.filter((quiz) => quiz.id !== deleteItemId);
+    setQuizzes(updatedQuizzes);
+
+    if (profile && typeof window !== "undefined") {
+      const storedContent = localStorage.getItem(`content_${profile.id}`);
+      if (storedContent) {
+        const allContent = JSON.parse(storedContent);
+        const updatedContent = allContent.filter((item: ContentItem) => item.id !== deleteItemId);
+        localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      }
+    }
+    setDeleteItemId(null);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -101,7 +126,10 @@ export default function QuizzesPage() {
                     >
                       <span className="material-symbols-outlined text-lg">visibility</span>
                     </button>
-                    <button className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded">
+                    <button
+                      onClick={() => handleDeleteClick(quiz.id)}
+                      className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                    >
                       <span className="material-symbols-outlined text-lg">delete</span>
                     </button>
                   </div>
@@ -119,6 +147,20 @@ export default function QuizzesPage() {
           setSelectedQuiz(null);
         }}
         content={selectedQuiz}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteItemId(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Quiz"
+        message="Are you sure you want to delete this quiz? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
       />
     </div>
   );
