@@ -7,6 +7,10 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { Tooltip } from "../components/Tooltip";
 import { Sidebar } from "../components/Sidebar";
 import { FlashcardStudyMode } from "../components/FlashcardStudyMode";
+import { ItemActionsMenu } from "../components/ItemActionsMenu";
+import { RenameModal } from "../components/RenameModal";
+import { MoveFolderModal } from "../components/MoveFolderModal";
+import { useToast } from "../components/ToastContainer";
 
 interface ContentItem {
   id: number;
@@ -15,10 +19,18 @@ interface ContentItem {
   type: string;
   createdAt: string;
   data?: any;
+  folderId?: string | null;
+}
+
+interface Folder {
+  id: string;
+  name: string;
+  icon: string;
 }
 
 export default function FlashcardsPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [flashcards, setFlashcards] = useState<ContentItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
@@ -26,6 +38,11 @@ export default function FlashcardsPage() {
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studyModeItem, setStudyModeItem] = useState<ContentItem | null>(null);
+  const [itemToRename, setItemToRename] = useState<ContentItem | null>(null);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [itemToMove, setItemToMove] = useState<ContentItem | null>(null);
+  const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -45,6 +62,38 @@ export default function FlashcardsPage() {
       }
     }
     setDeleteItemId(null);
+    showToast("Flashcards deleted successfully", "success");
+  };
+
+  const handleRename = (newTitle: string) => {
+    if (!itemToRename || !profile) return;
+    const storedContent = localStorage.getItem(`content_${profile.id}`);
+    if (storedContent) {
+      const allContent = JSON.parse(storedContent);
+      const updatedContent = allContent.map((item: ContentItem) =>
+        item.id === itemToRename.id ? { ...item, title: newTitle } : item
+      );
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      setFlashcards(updatedContent.filter((item: ContentItem) => item.type === "flashcards"));
+    }
+    showToast("Flashcards renamed successfully", "success");
+    setItemToRename(null);
+  };
+
+  const handleMoveToFolder = (folderId: string | null) => {
+    if (!itemToMove || !profile) return;
+    const storedContent = localStorage.getItem(`content_${profile.id}`);
+    if (storedContent) {
+      const allContent = JSON.parse(storedContent);
+      const updatedContent = allContent.map((item: ContentItem) =>
+        item.id === itemToMove.id ? { ...item, folderId } : item
+      );
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      setFlashcards(updatedContent.filter((item: ContentItem) => item.type === "flashcards"));
+    }
+    const folderName = folderId ? folders.find((f) => f.id === folderId)?.name || "folder" : "General";
+    showToast(`Moved to ${folderName}`, "success");
+    setItemToMove(null);
   };
 
   useEffect(() => {
@@ -57,6 +106,10 @@ export default function FlashcardsPage() {
       if (storedContent) {
         const allContent = JSON.parse(storedContent);
         setFlashcards(allContent.filter((item: ContentItem) => item.type === "flashcards"));
+      }
+      const storedFolders = localStorage.getItem(`folders_${profileData.id}`);
+      if (storedFolders) {
+        setFolders(JSON.parse(storedFolders));
       }
     }
   }, [router]);
@@ -100,6 +153,10 @@ export default function FlashcardsPage() {
                       <Tooltip content={item.title} className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{item.title}</h3>
                       </Tooltip>
+                      <ItemActionsMenu
+                        onRename={() => { setItemToRename(item); setIsRenameModalOpen(true); }}
+                        onMove={() => { setItemToMove(item); setIsMoveFolderOpen(true); }}
+                      />
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
                   </div>
@@ -125,6 +182,8 @@ export default function FlashcardsPage() {
       </main>
       <ContentViewModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedItem(null); }} content={selectedItem} />
       <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setDeleteItemId(null); }} onConfirm={handleDeleteConfirm} title="Delete Flashcards" message="Are you sure you want to delete these flashcards?" confirmText="Delete" cancelText="Cancel" type="danger" />
+      <RenameModal isOpen={isRenameModalOpen} onClose={() => { setIsRenameModalOpen(false); setItemToRename(null); }} onRename={handleRename} currentTitle={itemToRename?.title || ""} itemType="flashcards" />
+      <MoveFolderModal isOpen={isMoveFolderOpen} onClose={() => { setIsMoveFolderOpen(false); setItemToMove(null); }} onMove={handleMoveToFolder} folders={folders} currentFolderId={itemToMove?.folderId || null} />
       {studyModeItem && studyModeItem.data?.flashcards && <FlashcardStudyMode flashcards={studyModeItem.data.flashcards} onClose={() => setStudyModeItem(null)} />}
     </div>
   );

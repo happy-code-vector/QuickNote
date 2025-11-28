@@ -6,6 +6,10 @@ import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { Tooltip } from "../components/Tooltip";
 import { Sidebar } from "../components/Sidebar";
+import { ItemActionsMenu } from "../components/ItemActionsMenu";
+import { RenameModal } from "../components/RenameModal";
+import { MoveFolderModal } from "../components/MoveFolderModal";
+import { useToast } from "../components/ToastContainer";
 
 interface ContentItem {
   id: number;
@@ -16,14 +20,26 @@ interface ContentItem {
   data?: any;
 }
 
+interface Folder {
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export default function NotesPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [notes, setNotes] = useState<ContentItem[]>([]);
   const [selectedNote, setSelectedNote] = useState<ContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToRename, setItemToRename] = useState<ContentItem | null>(null);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [itemToMove, setItemToMove] = useState<ContentItem | null>(null);
+  const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -43,6 +59,38 @@ export default function NotesPage() {
       }
     }
     setDeleteItemId(null);
+    showToast("Note deleted successfully", "success");
+  };
+
+  const handleRename = (newTitle: string) => {
+    if (!itemToRename || !profile) return;
+    const storedContent = localStorage.getItem(`content_${profile.id}`);
+    if (storedContent) {
+      const allContent = JSON.parse(storedContent);
+      const updatedContent = allContent.map((item: ContentItem) =>
+        item.id === itemToRename.id ? { ...item, title: newTitle } : item
+      );
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      setNotes(updatedContent.filter((item: ContentItem) => item.type === "notes"));
+    }
+    showToast("Note renamed successfully", "success");
+    setItemToRename(null);
+  };
+
+  const handleMoveToFolder = (folderId: string | null) => {
+    if (!itemToMove || !profile) return;
+    const storedContent = localStorage.getItem(`content_${profile.id}`);
+    if (storedContent) {
+      const allContent = JSON.parse(storedContent);
+      const updatedContent = allContent.map((item: ContentItem) =>
+        item.id === itemToMove.id ? { ...item, folderId } : item
+      );
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      setNotes(updatedContent.filter((item: ContentItem) => item.type === "notes"));
+    }
+    const folderName = folderId ? folders.find((f) => f.id === folderId)?.name || "folder" : "General";
+    showToast(`Moved to ${folderName}`, "success");
+    setItemToMove(null);
   };
 
   useEffect(() => {
@@ -58,6 +106,10 @@ export default function NotesPage() {
       if (storedContent) {
         const allContent = JSON.parse(storedContent);
         setNotes(allContent.filter((item: ContentItem) => item.type === "notes"));
+      }
+      const storedFolders = localStorage.getItem(`folders_${profileData.id}`);
+      if (storedFolders) {
+        setFolders(JSON.parse(storedFolders));
       }
     }
   }, [router]);
@@ -103,6 +155,10 @@ export default function NotesPage() {
                       <Tooltip content={note.title} className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{note.title}</h3>
                       </Tooltip>
+                      <ItemActionsMenu
+                        onRename={() => { setItemToRename(note); setIsRenameModalOpen(true); }}
+                        onMove={() => { setItemToMove(note); setIsMoveFolderOpen(true); }}
+                      />
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.description}</p>
                   </div>
@@ -125,6 +181,8 @@ export default function NotesPage() {
       </main>
       <ContentViewModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedNote(null); }} content={selectedNote} />
       <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setDeleteItemId(null); }} onConfirm={handleDeleteConfirm} title="Delete Note" message="Are you sure you want to delete this note?" confirmText="Delete" cancelText="Cancel" type="danger" />
+      <RenameModal isOpen={isRenameModalOpen} onClose={() => { setIsRenameModalOpen(false); setItemToRename(null); }} onRename={handleRename} currentTitle={itemToRename?.title || ""} itemType="note" />
+      <MoveFolderModal isOpen={isMoveFolderOpen} onClose={() => { setIsMoveFolderOpen(false); setItemToMove(null); }} onMove={handleMoveToFolder} folders={folders} currentFolderId={(itemToMove as any)?.folderId || null} />
     </div>
   );
 }

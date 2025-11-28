@@ -652,70 +652,78 @@ export default function DashboardPage() {
       />
 
       <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
-        <aside className={`${sidebarExpanded ? "w-64" : "w-20"} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col transition-all duration-300 flex-shrink-0`}>
-          <div className="flex h-full flex-col justify-between p-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
+        <div className="relative hidden md:flex flex-shrink-0">
+          <aside className={`${sidebarExpanded ? "w-64" : "w-20"} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-300`}>
+            <div className="flex h-full flex-col justify-between p-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex gap-3 items-center">
                   <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center rounded-lg w-10 h-10">
                     <span className="material-symbols-outlined">auto_stories</span>
                   </div>
                   {sidebarExpanded && <h1 className="text-lg font-bold text-gray-900 dark:text-white">QuickNote</h1>}
                 </div>
-                <button onClick={toggleSidebar} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}>
-                  <span className="material-symbols-outlined">{sidebarExpanded ? "menu_open" : "menu"}</span>
-                </button>
+
+                <Link 
+                  href="/profile-selection" 
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                    sidebarExpanded 
+                      ? "hover:bg-gray-100 dark:hover:bg-gray-800" 
+                      : "justify-center"
+                  }`} 
+                  title="Switch Profile"
+                >
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0 ${!sidebarExpanded ? "hover:ring-2 hover:ring-purple-400 transition-all" : ""}`} />
+                  {sidebarExpanded && (
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <h1 className="text-sm font-medium text-gray-900 dark:text-white truncate">{profile.name}</h1>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{profile.type}</p>
+                    </div>
+                  )}
+                  {sidebarExpanded && (
+                    <span className="material-symbols-outlined text-gray-400 text-sm">swap_horiz</span>
+                  )}
+                </Link>
+
+                <nav className="flex flex-col gap-1 mt-4">
+                  <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+                    <span className="material-symbols-outlined fill">home</span>
+                    {sidebarExpanded && <p className="text-sm font-medium">Dashboard</p>}
+                  </Link>
+                  <Link href="/notes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <span className="material-symbols-outlined">description</span>
+                    {sidebarExpanded && <p className="text-sm font-medium">All Notes</p>}
+                  </Link>
+                  <Link href="/flashcards" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <span className="material-symbols-outlined">style</span>
+                    {sidebarExpanded && <p className="text-sm font-medium">All Flashcards</p>}
+                  </Link>
+                  <Link href="/quizzes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <span className="material-symbols-outlined">quiz</span>
+                    {sidebarExpanded && <p className="text-sm font-medium">All Quizzes</p>}
+                  </Link>
+                </nav>
               </div>
 
-              <Link 
-                href="/profile-selection" 
-                className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                  sidebarExpanded 
-                    ? "hover:bg-gray-100 dark:hover:bg-gray-800" 
-                    : "justify-center"
-                }`} 
-                title="Switch Profile"
-              >
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0 ${!sidebarExpanded ? "hover:ring-2 hover:ring-purple-400 transition-all" : ""}`} />
-                {sidebarExpanded && (
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <h1 className="text-sm font-medium text-gray-900 dark:text-white truncate">{profile.name}</h1>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{profile.type}</p>
-                  </div>
-                )}
-                {sidebarExpanded && (
-                  <span className="material-symbols-outlined text-gray-400 text-sm">swap_horiz</span>
-                )}
-              </Link>
-
-              <nav className="flex flex-col gap-1 mt-4">
-                <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
-                  <span className="material-symbols-outlined fill">home</span>
-                  {sidebarExpanded && <p className="text-sm font-medium">Dashboard</p>}
+              <div className="flex flex-col gap-4">
+                <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  <span className="material-symbols-outlined">settings</span>
+                  {sidebarExpanded && <p className="text-sm font-medium">Settings</p>}
                 </Link>
-                <Link href="/notes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  <span className="material-symbols-outlined">description</span>
-                  {sidebarExpanded && <p className="text-sm font-medium">All Notes</p>}
-                </Link>
-                <Link href="/flashcards" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  <span className="material-symbols-outlined">style</span>
-                  {sidebarExpanded && <p className="text-sm font-medium">All Flashcards</p>}
-                </Link>
-                <Link href="/quizzes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  <span className="material-symbols-outlined">quiz</span>
-                  {sidebarExpanded && <p className="text-sm font-medium">All Quizzes</p>}
-                </Link>
-              </nav>
+              </div>
             </div>
-
-            <div className="flex flex-col gap-4">
-              <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
-                <span className="material-symbols-outlined">settings</span>
-                {sidebarExpanded && <p className="text-sm font-medium">Settings</p>}
-              </Link>
-            </div>
-          </div>
-        </aside>
+          </aside>
+          
+          {/* Collapse/Expand toggle button - centered on the border line */}
+          <button
+            onClick={toggleSidebar}
+            className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 w-6 h-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all group"
+            title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <span className="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+              {sidebarExpanded ? "chevron_left" : "chevron_right"}
+            </span>
+          </button>
+        </div>
 
         <main className="flex-1 overflow-y-auto">
           <div className="px-4 sm:px-6 lg:px-10 py-8 w-full max-w-6xl mx-auto">
