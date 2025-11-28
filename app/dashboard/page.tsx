@@ -665,8 +665,8 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
-                {/* Current Folder Indicator (for Sources and Items views when viewing folder contents) */}
-                {viewMode !== "folder" && isViewingFolderContents && (
+                {/* Current Folder Indicator (shown when viewing folder contents in any mode) */}
+                {isViewingFolderContents && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800">
                     <span className="text-lg">
                       {selectedFolderId === null ? "📂" : folders.find((f) => f.id === selectedFolderId)?.icon}
@@ -834,21 +834,11 @@ export default function DashboardPage() {
                 {/* Breadcrumb */}
                 <button
                   onClick={() => setIsViewingFolderContents(false)}
-                  className="mb-4 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
+                  className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
                 >
                   <span className="material-symbols-outlined">arrow_back</span>
                   Back to Folders
                 </button>
-
-                {/* Folder Header */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center text-2xl border border-purple-200 dark:border-purple-800">
-                    {selectedFolderId === null ? "📂" : folders.find((f) => f.id === selectedFolderId)?.icon}
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {selectedFolderId === null ? "General" : folders.find((f) => f.id === selectedFolderId)?.name}
-                  </h2>
-                </div>
 
                 {/* Items in Folder */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
