@@ -13,6 +13,7 @@ import { MoveFolderModal } from "../components/MoveFolderModal";
 import { DeleteFolderModal } from "../components/DeleteFolderModal";
 import { FlashcardStudyMode } from "../components/FlashcardStudyMode";
 import { QuizStudyMode } from "../components/QuizStudyMode";
+import { RenameModal } from "../components/RenameModal";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -95,6 +96,8 @@ export default function DashboardPage() {
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [isDeleteFolderModalOpen, setIsDeleteFolderModalOpen] = useState(false);
   const [studyModeItem, setStudyModeItem] = useState<ContentItem | null>(null);
+  const [itemToRename, setItemToRename] = useState<ContentItem | null>(null);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -132,6 +135,48 @@ export default function DashboardPage() {
     }
 
     setDeleteItemId(null);
+  };
+
+  // Rename item
+  const handleRename = (newTitle: string) => {
+    if (!itemToRename || !profile) return;
+
+    const updatedContent = content.map((item) =>
+      item.id === itemToRename.id ? { ...item, title: newTitle } : item
+    );
+
+    setContent(updatedContent);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+    }
+
+    showToast("Item renamed successfully", "success");
+    setItemToRename(null);
+  };
+
+  // Share item
+  const handleShare = async (item: ContentItem) => {
+    const shareData = {
+      title: item.title,
+      text: `Check out my ${item.type}: ${item.title}\n\n${item.description}`,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        showToast("Shared successfully!", "success");
+      } else {
+        // Fallback: copy to clipboard
+        const textToCopy = `${item.title}\n\n${item.description}`;
+        await navigator.clipboard.writeText(textToCopy);
+        showToast("Copied to clipboard!", "success");
+      }
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        showToast("Failed to share", "error");
+      }
+    }
   };
 
   useEffect(() => {
@@ -937,8 +982,26 @@ export default function DashboardPage() {
                                 setIsViewModalOpen(true);
                               }}
                               className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                              title="View"
                             >
                               <span className="material-symbols-outlined text-lg">visibility</span>
+                            </button>
+                            <button
+                              onClick={() => handleShare(item)}
+                              className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
+                              title="Share"
+                            >
+                              <span className="material-symbols-outlined text-lg">share</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setItemToRename(item);
+                                setIsRenameModalOpen(true);
+                              }}
+                              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
+                              title="Rename"
+                            >
+                              <span className="material-symbols-outlined text-lg">edit</span>
                             </button>
                             <button
                               onClick={() => {
@@ -953,6 +1016,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => handleDeleteClick(item.id)}
                               className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                              title="Delete"
                             >
                               <span className="material-symbols-outlined text-lg">delete</span>
                             </button>
@@ -1099,8 +1163,26 @@ export default function DashboardPage() {
                               setIsViewModalOpen(true);
                             }}
                             className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
+                            title="View"
                           >
                             <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
+                            onClick={() => handleShare(item)}
+                            className="text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 p-1 rounded"
+                            title="Share"
+                          >
+                            <span className="material-symbols-outlined text-lg">share</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setItemToRename(item);
+                              setIsRenameModalOpen(true);
+                            }}
+                            className="text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-1 rounded"
+                            title="Rename"
+                          >
+                            <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
                           {isViewingFolderContents && (
                             <button
@@ -1177,8 +1259,26 @@ export default function DashboardPage() {
                             setIsViewModalOpen(true);
                           }}
                           className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
+                          title="View"
                         >
                           <span className="material-symbols-outlined text-lg">visibility</span>
+                        </button>
+                        <button
+                          onClick={() => handleShare(item)}
+                          className="text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 p-1 rounded"
+                          title="Share"
+                        >
+                          <span className="material-symbols-outlined text-lg">share</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setItemToRename(item);
+                            setIsRenameModalOpen(true);
+                          }}
+                          className="text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-1 rounded"
+                          title="Rename"
+                        >
+                          <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
                         {isViewingFolderContents && (
                           <button
@@ -1298,6 +1398,18 @@ export default function DashboardPage() {
           onClose={() => setStudyModeItem(null)}
         />
       )}
+
+      {/* Rename Modal */}
+      <RenameModal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setItemToRename(null);
+        }}
+        onRename={handleRename}
+        currentTitle={itemToRename?.title || ""}
+        itemType={itemToRename?.type || "item"}
+      />
     </>
   );
 }
