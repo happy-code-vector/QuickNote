@@ -717,6 +717,175 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Folder View - Show Folders */}
+            {viewMode === "folder" && selectedFolderId === null && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Create Folder Card */}
+                <button
+                  onClick={() => setIsCreateFolderOpen(true)}
+                  className="group bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-xl p-6 hover:border-purple-500 dark:hover:border-purple-500 transition-all min-h-[180px] flex items-center justify-center"
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                      <span className="material-symbols-outlined text-3xl">add</span>
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white">Create Folder</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Organize your content</p>
+                  </div>
+                </button>
+
+                {/* General Folder */}
+                <button
+                  onClick={() => setSelectedFolderId(null)}
+                  className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-lg min-h-[180px]"
+                >
+                  <div className="flex flex-col items-center gap-3 h-full justify-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                      📂
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white">General</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {content.filter((item) => !item.folderId).length} items
+                    </p>
+                  </div>
+                </button>
+
+                {/* User Folders */}
+                {folders.map((folder) => (
+                  <div
+                    key={folder.id}
+                    className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-lg relative min-h-[180px]"
+                  >
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Delete folder "${folder.name}"? All items will be moved to General folder.`)) {
+                          handleDeleteFolder(folder.id);
+                        }
+                      }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 z-10"
+                      title="Delete folder"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedFolderId(folder.id)}
+                      className="w-full h-full"
+                    >
+                      <div className="flex flex-col items-center gap-3 h-full justify-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl flex items-center justify-center text-3xl border border-purple-200 dark:border-purple-800 group-hover:scale-110 transition-transform">
+                          {folder.icon}
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white truncate max-w-full px-2">{folder.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {content.filter((item) => item.folderId === folder.id).length} items
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                ))}
+
+                {/* Empty State */}
+                {folders.length === 0 && (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <span className="material-symbols-outlined text-6xl">folder_off</span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">No custom folders yet</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">Click "Create Folder" to organize your content</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Folder View - Show Items in Selected Folder */}
+            {viewMode === "folder" && selectedFolderId !== null && (
+              <div>
+                {/* Breadcrumb */}
+                <button
+                  onClick={() => setSelectedFolderId(null)}
+                  className="mb-4 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  <span className="material-symbols-outlined">arrow_back</span>
+                  Back to Folders
+                </button>
+
+                {/* Folder Header */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center text-2xl border border-purple-200 dark:border-purple-800">
+                    {selectedFolderId === null ? "📂" : folders.find((f) => f.id === selectedFolderId)?.icon}
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {selectedFolderId === null ? "General" : folders.find((f) => f.id === selectedFolderId)?.name}
+                  </h2>
+                </div>
+
+                {/* Items in Folder */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {content
+                    .filter((item) => item.folderId === selectedFolderId)
+                    .map((item) => (
+                      <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                        <div className="p-5">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
+                              <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
+                            </div>
+                            <Tooltip content={item.title} className="flex-1 min-w-0">
+                              <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{item.title}</h3>
+                            </Tooltip>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
+                        </div>
+                        <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedContent(item);
+                                setIsViewModalOpen(true);
+                              }}
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                            >
+                              <span className="material-symbols-outlined text-lg">visibility</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setItemToMove(item);
+                                setIsMoveFolderOpen(true);
+                              }}
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                              title="Move to folder"
+                            >
+                              <span className="material-symbols-outlined text-lg">drive_file_move</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(item.id)}
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                            >
+                              <span className="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Empty Folder State */}
+                {content.filter((item) => item.folderId === selectedFolderId).length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <span className="material-symbols-outlined text-6xl">folder_open</span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">This folder is empty</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">Generate content to add items to this folder</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Material View - Show Sources */}
             {viewMode === "material" && !selectedSourceId && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -887,6 +1056,21 @@ export default function DashboardPage() {
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
+      />
+
+      {/* Folder Management Modals */}
+      <CreateFolderModal
+        isOpen={isCreateFolderOpen}
+        onClose={() => setIsCreateFolderOpen(false)}
+        onCreateFolder={handleCreateFolder}
+      />
+
+      <MoveFolderModal
+        isOpen={isMoveFolderOpen}
+        onClose={() => setIsMoveFolderOpen(false)}
+        folders={folders}
+        currentFolderId={itemToMove?.folderId || null}
+        onMoveToFolder={handleMoveToFolder}
       />
     </>
   );
