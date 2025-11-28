@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { Tooltip } from "../components/Tooltip";
+import { Sidebar } from "../components/Sidebar";
 
 interface ContentItem {
   id: number;
@@ -32,10 +32,8 @@ export default function NotesPage() {
 
   const handleDeleteConfirm = () => {
     if (deleteItemId === null) return;
-
     const updatedNotes = notes.filter((note) => note.id !== deleteItemId);
     setNotes(updatedNotes);
-
     if (profile && typeof window !== "undefined") {
       const storedContent = localStorage.getItem(`content_${profile.id}`);
       if (storedContent) {
@@ -56,13 +54,10 @@ export default function NotesPage() {
       }
       const profileData = JSON.parse(currentProfile);
       setProfile(profileData);
-
-      // Load content and filter for notes
       const storedContent = localStorage.getItem(`content_${profileData.id}`);
       if (storedContent) {
         const allContent = JSON.parse(storedContent);
-        const notesOnly = allContent.filter((item: ContentItem) => item.type === "notes");
-        setNotes(notesOnly);
+        setNotes(allContent.filter((item: ContentItem) => item.type === "notes"));
       }
     }
   }, [router]);
@@ -71,105 +66,65 @@ export default function NotesPage() {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffMinutes = Math.floor(diffTime / (1000 * 60));
-    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
   };
 
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <Sidebar profile={profile} />
+      <main className="flex-1 overflow-y-auto">
+        <div className="px-4 sm:px-6 lg:px-10 py-8 w-full max-w-6xl mx-auto">
+          <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">All Notes</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">{notes.length} note{notes.length !== 1 ? 's' : ''} available</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{notes.length} note{notes.length !== 1 ? "s" : ""} available</p>
           </div>
-          <Link href="/dashboard" className="btn-secondary">
-            <span className="material-symbols-outlined mr-2">arrow_back</span>
-            Back to Dashboard
-          </Link>
-        </div>
 
-        {notes.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-12 text-center border border-gray-200 dark:border-gray-800">
-            <span className="material-symbols-outlined text-6xl text-gray-400 dark:text-gray-600 mb-4">description</span>
-            <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">No Notes Yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">Start creating notes from your study materials</p>
-            <Link href="/dashboard" className="btn-primary">Create Your First Note</Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notes.map((note) => (
-              <div key={note.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                <div className="p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
-                      <span className="material-symbols-outlined">description</span>
+          {notes.length === 0 ? (
+            <div className="text-center py-16">
+              <span className="material-symbols-outlined text-7xl text-gray-400 dark:text-gray-600 mb-4">description</span>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Notes Yet</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Generate notes from your study materials</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {notes.map((note) => (
+                <div key={note.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
+                        <span className="material-symbols-outlined">description</span>
+                      </div>
+                      <Tooltip content={note.title} className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{note.title}</h3>
+                      </Tooltip>
                     </div>
-                    <Tooltip content={note.title} className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{note.title}</h3>
-                    </Tooltip>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.description}</p>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.description}</p>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(note.createdAt)}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedNote(note);
-                        setIsModalOpen(true);
-                      }}
-                      className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded"
-                    >
-                      <span className="material-symbols-outlined text-lg">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(note.id)}
-                      className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
-                    >
-                      <span className="material-symbols-outlined text-lg">delete</span>
-                    </button>
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(note.createdAt)}</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setSelectedNote(note); setIsModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1 rounded" title="View">
+                        <span className="material-symbols-outlined text-lg">visibility</span>
+                      </button>
+                      <button onClick={() => handleDeleteClick(note.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded" title="Delete">
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <ContentViewModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedNote(null);
-        }}
-        content={selectedNote}
-      />
-
-      <ConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setDeleteItemId(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Note"
-        message="Are you sure you want to delete this note? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
-      />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+      <ContentViewModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedNote(null); }} content={selectedNote} />
+      <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setDeleteItemId(null); }} onConfirm={handleDeleteConfirm} title="Delete Note" message="Are you sure you want to delete this note?" confirmText="Delete" cancelText="Cancel" type="danger" />
     </div>
   );
 }
