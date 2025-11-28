@@ -17,6 +17,7 @@ RULES:
 - Capture all meaningful information, no artificial limits on list sizes.
 - Keep language clear and concise.
 - No extra commentary or formatting outside of JSON.
+- If you cannot access or analyze the content, return: {"error": "content_not_accessible", "message": "Unable to access or analyze the provided content"}
 
 RESPONSE FORMAT (JSON only):
 {
@@ -41,6 +42,7 @@ RULES:
 - No duplicate or trivial flashcards.
 - Answers must be based only on the provided content.
 - The assistant must return only valid JSON matching the schema below.
+- If you cannot access or analyze the content, return: {"error": "content_not_accessible", "message": "Unable to access or analyze the provided content"}
 
 RESPONSE FORMAT (JSON only):
 {
@@ -65,6 +67,7 @@ RULES:
 - Only one correct answer per question.
 - Distractors must be plausible but clearly wrong.
 - No duplicates.
+- If you cannot access or analyze the content, return: {"error": "content_not_accessible", "message": "Unable to access or analyze the provided content"}
 
 RESPONSE FORMAT (JSON only):
 {
@@ -125,22 +128,12 @@ export async function POST(request: NextRequest) {
     const parts: any[] = [{ text: fullPrompt }];
 
     // If file data is provided (image or PDF), add it as inline data
-    if (fileData) {
+    // Note: URLs and YouTube links are sent as text only (matching iOS app)
+    if (fileData && mimeType !== "video/youtube") {
       parts.push({
         inlineData: {
           mimeType: mimeType || "application/pdf",
           data: fileData,
-        },
-      });
-    }
-
-    // If YouTube video, add as file_data with file_uri
-    if (mimeType === "video/youtube" && content) {
-      // Extract the YouTube URL from the content
-      const youtubeUrl = content.replace("Analyze the following link and extract all relevant information: ", "").trim();
-      parts.push({
-        file_data: {
-          file_uri: youtubeUrl,
         },
       });
     }
@@ -157,7 +150,8 @@ export async function POST(request: NextRequest) {
           },
         ],
         generationConfig: {
-          maxOutputTokens: 8192,
+          // Match iOS token allocation: 16384 for URLs, 65536 for PDFs
+          maxOutputTokens: fileData ? 65536 : 16384,
         },
       }),
     });
@@ -187,19 +181,80 @@ export async function POST(request: NextRequest) {
 
     try {
       const parsed = JSON.parse(cleanOutput);
+      
+      // Check if AI returned an error response
+      if (parsed.error) {
+        const errorMessage = parsed.message || "Unable to generate content from the provided source";
+        console.error("AI returned error:", parsed);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: parsed.error,
+            message: errorMessage 
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validate that we have actual content based on type
+      if (type === "note" && (!parsed.title || !parsed.key_findings || !parsed.quick_summary)) {
+        console.error("Invalid note structure:", parsed);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "invalid_response",
+            message: "AI did not return valid note content" 
+          },
+          { status: 500 }
+        );
+      }
+
+      if (type === "flashcard" && (!parsed.flashcards || !Array.isArray(parsed.flashcards) || parsed.flashcards.length === 0)) {
+        console.error("Invalid flashcard structure:", parsed);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "invalid_response",
+            message: "AI did not return valid flashcard content" 
+          },
+          { status: 500 }
+        );
+      }
+
+      if (type === "quiz" && (!parsed.quizzes || !Array.isArray(parsed.quizzes) || parsed.quizzes.length === 0)) {
+        console.error("Invalid quiz structure:", parsed);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "invalid_response",
+            message: "AI did not return valid quiz content" 
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json({ success: true, data: parsed });
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
       console.error("Raw output:", output);
       return NextResponse.json(
-        { error: "Invalid JSON response from AI", raw: output },
+        { 
+          success: false,
+          error: "parse_error",
+          message: "Failed to parse AI response",
+          raw: output 
+        },
         { status: 500 }
       );
     }
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        success: false,
+        error: "internal_error",
+        message: "Internal server error" 
+      },
       { status: 500 }
     );
   }

@@ -177,12 +177,9 @@ export default function DashboardPage() {
         }
       } else {
         // For URLs and YouTube, add context like iOS app does
-        if (contentType === "url") {
-          contentToAnalyze = `Analyze the following link and extract all relevant information: ${contentInput}`;
-        } else if (contentType === "youtube") {
-          // YouTube needs special handling - send as file_uri
-          contentToAnalyze = contentInput; // Just the URL
-          fileMimeType = "video/youtube"; // Special marker for YouTube
+        // Both are treated as text-based analysis (matching iOS implementation)
+        if (contentType === "url" || contentType === "youtube") {
+          contentToAnalyze = `Analyze the following link: ${contentInput}`;
         }
       }
 
@@ -248,52 +245,76 @@ export default function DashboardPage() {
       const newItems: ContentItem[] = [];
       const errors: string[] = [];
 
-      if (noteResult.success) {
-        newItems.push({
-          id: timestamp,
-          title: noteResult.data.title || `Notes: ${sourceText.substring(0, 30)}...`,
-          description: `AI-generated notes from ${sourceLabel}`,
-          type: "notes",
-          createdAt: new Date().toISOString(),
-          data: noteResult.data,
-          sourceId,
-          sourceName,
-          sourceType: contentType,
-        });
+      // Validate and add notes
+      if (noteResult.success && noteResult.data) {
+        // Check if data has required fields and is not an error
+        if (noteResult.data.error) {
+          errors.push(noteResult.data.message || "Notes: Content not accessible");
+        } else if (noteResult.data.title && noteResult.data.key_findings && noteResult.data.quick_summary) {
+          newItems.push({
+            id: timestamp,
+            title: noteResult.data.title,
+            description: `AI-generated notes from ${sourceLabel}`,
+            type: "notes",
+            createdAt: new Date().toISOString(),
+            data: noteResult.data,
+            sourceId,
+            sourceName,
+            sourceType: contentType,
+          });
+        } else {
+          errors.push("Notes: Invalid content structure");
+        }
       } else {
-        errors.push(noteResult.message || noteResult.error || "Notes generation failed");
+        errors.push(noteResult.message || "Notes generation failed");
       }
 
-      if (flashcardResult.success) {
-        newItems.push({
-          id: timestamp + 1,
-          title: `Flashcards: ${sourceText.substring(0, 30)}...`,
-          description: `${flashcardResult.data.flashcards?.length || 0} flashcards from ${sourceLabel}`,
-          type: "flashcards",
-          createdAt: new Date().toISOString(),
-          sourceId,
-          sourceName,
-          sourceType: contentType,
-          data: flashcardResult.data, // Store the actual content
-        });
+      // Validate and add flashcards
+      if (flashcardResult.success && flashcardResult.data) {
+        // Check if data has flashcards array and is not an error
+        if (flashcardResult.data.error) {
+          errors.push(flashcardResult.data.message || "Flashcards: Content not accessible");
+        } else if (flashcardResult.data.flashcards && Array.isArray(flashcardResult.data.flashcards) && flashcardResult.data.flashcards.length > 0) {
+          newItems.push({
+            id: timestamp + 1,
+            title: `Flashcards: ${sourceText.substring(0, 30)}...`,
+            description: `${flashcardResult.data.flashcards.length} flashcards from ${sourceLabel}`,
+            type: "flashcards",
+            createdAt: new Date().toISOString(),
+            sourceId,
+            sourceName,
+            sourceType: contentType,
+            data: flashcardResult.data,
+          });
+        } else {
+          errors.push("Flashcards: No valid flashcards generated");
+        }
       } else {
-        errors.push(flashcardResult.message || flashcardResult.error || "Flashcards generation failed");
+        errors.push(flashcardResult.message || "Flashcards generation failed");
       }
 
-      if (quizResult.success) {
-        newItems.push({
-          id: timestamp + 2,
-          title: `Quiz: ${sourceText.substring(0, 30)}...`,
-          description: `${quizResult.data.quizzes?.length || 0} questions from ${sourceLabel}`,
-          type: "quiz",
-          createdAt: new Date().toISOString(),
-          data: quizResult.data,
-          sourceId,
-          sourceName,
-          sourceType: contentType,
-        });
+      // Validate and add quizzes
+      if (quizResult.success && quizResult.data) {
+        // Check if data has quizzes array and is not an error
+        if (quizResult.data.error) {
+          errors.push(quizResult.data.message || "Quiz: Content not accessible");
+        } else if (quizResult.data.quizzes && Array.isArray(quizResult.data.quizzes) && quizResult.data.quizzes.length > 0) {
+          newItems.push({
+            id: timestamp + 2,
+            title: `Quiz: ${sourceText.substring(0, 30)}...`,
+            description: `${quizResult.data.quizzes.length} questions from ${sourceLabel}`,
+            type: "quiz",
+            createdAt: new Date().toISOString(),
+            data: quizResult.data,
+            sourceId,
+            sourceName,
+            sourceType: contentType,
+          });
+        } else {
+          errors.push("Quiz: No valid questions generated");
+        }
       } else {
-        errors.push(quizResult.message || quizResult.error || "Quiz generation failed");
+        errors.push(quizResult.message || "Quiz generation failed");
       }
 
       // If no items were generated, show first error
