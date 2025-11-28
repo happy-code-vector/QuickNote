@@ -10,6 +10,7 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { Tooltip } from "../components/Tooltip";
 import { CreateFolderModal } from "../components/CreateFolderModal";
 import { MoveFolderModal } from "../components/MoveFolderModal";
+import { DeleteFolderModal } from "../components/DeleteFolderModal";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -234,12 +235,14 @@ export default function DashboardPage() {
     }
   };
 
-  // Delete folder
-  const handleDeleteFolder = (folderId: string) => {
+  // Delete folder - move items to General
+  const handleDeleteFolderKeepItems = (folderId: string) => {
     if (!profile) return;
 
     const folder = folders.find((f) => f.id === folderId);
     if (!folder) return;
+
+    const itemCount = content.filter((item) => item.folderId === folderId).length;
 
     // Move all items in this folder to General (null)
     const updatedContent = content.map((item) =>
@@ -257,7 +260,34 @@ export default function DashboardPage() {
       localStorage.setItem(`folders_${profile.id}`, JSON.stringify(updatedFolders));
     }
 
-    showToast(`Folder "${folder.name}" deleted`, "success");
+    showToast(`Folder deleted, ${itemCount} item${itemCount !== 1 ? 's' : ''} moved to General`, "success");
+    setSelectedFolderId(null);
+  };
+
+  // Delete folder and all its contents
+  const handleDeleteFolderAndContents = (folderId: string) => {
+    if (!profile) return;
+
+    const folder = folders.find((f) => f.id === folderId);
+    if (!folder) return;
+
+    const itemCount = content.filter((item) => item.folderId === folderId).length;
+
+    // Delete all items in this folder
+    const updatedContent = content.filter((item) => item.folderId !== folderId);
+
+    setContent(updatedContent);
+
+    // Remove folder
+    const updatedFolders = folders.filter((f) => f.id !== folderId);
+    setFolders(updatedFolders);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      localStorage.setItem(`folders_${profile.id}`, JSON.stringify(updatedFolders));
+    }
+
+    showToast(`Folder and ${itemCount} item${itemCount !== 1 ? 's' : ''} deleted permanently`, "success");
     setSelectedFolderId(null);
   };
 
@@ -1201,25 +1231,27 @@ export default function DashboardPage() {
         onMoveToFolder={handleMoveToFolder}
       />
 
-      {/* Delete Folder Confirmation Modal */}
-      <ConfirmModal
+      {/* Delete Folder Modal with Options */}
+      <DeleteFolderModal
         isOpen={isDeleteFolderModalOpen}
         onClose={() => {
           setIsDeleteFolderModalOpen(false);
           setFolderToDelete(null);
         }}
-        onConfirm={() => {
+        onMoveToGeneral={() => {
           if (folderToDelete) {
-            handleDeleteFolder(folderToDelete.id);
+            handleDeleteFolderKeepItems(folderToDelete.id);
           }
-          setIsDeleteFolderModalOpen(false);
           setFolderToDelete(null);
         }}
-        title="Delete Folder"
-        message={`Are you sure you want to delete "${folderToDelete?.name}"? All items in this folder will be moved to General.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
+        onDeleteAll={() => {
+          if (folderToDelete) {
+            handleDeleteFolderAndContents(folderToDelete.id);
+          }
+          setFolderToDelete(null);
+        }}
+        folderName={folderToDelete?.name || ""}
+        itemCount={folderToDelete ? content.filter((item) => item.folderId === folderToDelete.id).length : 0}
       />
     </>
   );
