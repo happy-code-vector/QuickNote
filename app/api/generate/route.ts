@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 const PROMPTS = {
   note: `You are QuicNotes, an AI that extracts study notes from the given content.
@@ -181,16 +181,16 @@ export async function POST(request: NextRequest) {
 
     try {
       const parsed = JSON.parse(cleanOutput);
-      
+
       // Check if AI returned an error response
       if (parsed.error) {
         const errorMessage = parsed.message || "Unable to generate content from the provided source";
         console.error("AI returned error:", parsed);
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: parsed.error,
-            message: errorMessage 
+            message: errorMessage
           },
           { status: 400 }
         );
@@ -200,10 +200,10 @@ export async function POST(request: NextRequest) {
       if (type === "note" && (!parsed.title || !parsed.key_findings || !parsed.quick_summary)) {
         console.error("Invalid note structure:", parsed);
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: "invalid_response",
-            message: "AI did not return valid note content" 
+            message: "AI did not return valid note content"
           },
           { status: 500 }
         );
@@ -212,10 +212,10 @@ export async function POST(request: NextRequest) {
       if (type === "flashcard" && (!parsed.flashcards || !Array.isArray(parsed.flashcards) || parsed.flashcards.length === 0)) {
         console.error("Invalid flashcard structure:", parsed);
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: "invalid_response",
-            message: "AI did not return valid flashcard content" 
+            message: "AI did not return valid flashcard content"
           },
           { status: 500 }
         );
@@ -224,10 +224,10 @@ export async function POST(request: NextRequest) {
       if (type === "quiz" && (!parsed.quizzes || !Array.isArray(parsed.quizzes) || parsed.quizzes.length === 0)) {
         console.error("Invalid quiz structure:", parsed);
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: "invalid_response",
-            message: "AI did not return valid quiz content" 
+            message: "AI did not return valid quiz content"
           },
           { status: 500 }
         );
@@ -238,11 +238,11 @@ export async function POST(request: NextRequest) {
       console.error("JSON parse error:", parseError);
       console.error("Raw output:", output);
       return NextResponse.json(
-        { 
+        {
           success: false,
           error: "parse_error",
           message: "Failed to parse AI response",
-          raw: output 
+          raw: output
         },
         { status: 500 }
       );
@@ -250,10 +250,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "internal_error",
-        message: "Internal server error" 
+        message: "Internal server error"
       },
       { status: 500 }
     );
