@@ -347,8 +347,8 @@ export default function DashboardPage() {
         message="Analyzing your content and generating study materials..."
       />
 
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
-        <aside className={`${sidebarExpanded ? "w-64" : "w-20"} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col transition-all duration-300`}>
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+        <aside className={`${sidebarExpanded ? "w-64" : "w-20"} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col transition-all duration-300 flex-shrink-0`}>
           <div className="flex h-full flex-col justify-between p-4">
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center">
