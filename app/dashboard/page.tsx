@@ -100,6 +100,15 @@ export default function DashboardPage() {
   const [itemToRename, setItemToRename] = useState<ContentItem | null>(null);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
 
+  // Toggle sidebar and persist state
+  const toggleSidebar = () => {
+    const newState = !sidebarExpanded;
+    setSidebarExpanded(newState);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sidebarExpanded", String(newState));
+    }
+  };
+
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
     setIsDeleteModalOpen(true);
@@ -193,6 +202,12 @@ export default function DashboardPage() {
       const storedContent = localStorage.getItem(`content_${profileData.id}`);
       if (storedContent) {
         setContent(JSON.parse(storedContent));
+      }
+
+      // Load sidebar state
+      const storedSidebarState = localStorage.getItem("sidebarExpanded");
+      if (storedSidebarState !== null) {
+        setSidebarExpanded(storedSidebarState === "true");
       }
 
       // Load folders
@@ -647,16 +662,24 @@ export default function DashboardPage() {
                   </div>
                   {sidebarExpanded && <h1 className="text-lg font-bold text-gray-900 dark:text-white">QuickNote</h1>}
                 </div>
-                <button onClick={() => setSidebarExpanded(!sidebarExpanded)} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                  <span className="material-symbols-outlined">menu_open</span>
+                <button onClick={toggleSidebar} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}>
+                  <span className="material-symbols-outlined">{sidebarExpanded ? "menu_open" : "menu"}</span>
                 </button>
               </div>
 
-              <Link href="/profile-selection" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Switch Profile">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0`} />
+              <Link 
+                href="/profile-selection" 
+                className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                  sidebarExpanded 
+                    ? "hover:bg-gray-100 dark:hover:bg-gray-800" 
+                    : "justify-center"
+                }`} 
+                title="Switch Profile"
+              >
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0 ${!sidebarExpanded ? "hover:ring-2 hover:ring-purple-400 transition-all" : ""}`} />
                 {sidebarExpanded && (
-                  <div className="flex flex-col flex-1">
-                    <h1 className="text-sm font-medium text-gray-900 dark:text-white">{profile.name}</h1>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <h1 className="text-sm font-medium text-gray-900 dark:text-white truncate">{profile.name}</h1>
                     <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{profile.type}</p>
                   </div>
                 )}
@@ -704,12 +727,25 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-800">
-              <div className="flex flex-col sm:flex-row h-auto sm:h-12 w-full items-center rounded-xl bg-gray-100 dark:bg-gray-800 p-1.5 gap-2 sm:gap-0 mb-6">
-                {["url", "pdf", "youtube", "image"].map((type) => (
-                  <label key={type} className="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-3 py-2 sm:py-0 w-full has-checked:bg-white has-checked:dark:bg-gray-900 has-checked:shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="capitalize">From {type === "url" ? "URL" : type === "youtube" ? "YouTube" : type.toUpperCase()}</span>
-                    <input type="radio" name="content-type" value={type} checked={contentType === type} onChange={(e) => setContentType(e.target.value)} className="hidden" />
-                  </label>
+              <div className="flex flex-col sm:flex-row h-auto sm:h-14 w-full items-center rounded-xl bg-gray-100 dark:bg-gray-800 p-1.5 gap-2 sm:gap-1 mb-6">
+                {[
+                  { type: "url", icon: "link", label: "URL" },
+                  { type: "pdf", icon: "picture_as_pdf", label: "PDF" },
+                  { type: "youtube", icon: "play_circle", label: "YouTube" },
+                  { type: "image", icon: "image", label: "Image" },
+                ].map(({ type, icon, label }) => (
+                  <button
+                    key={type}
+                    onClick={() => setContentType(type)}
+                    className={`flex cursor-pointer h-full grow items-center justify-center gap-2 rounded-lg px-4 py-2 w-full text-sm font-medium transition-all ${
+                      contentType === type
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-lg">{icon}</span>
+                    <span className="hidden sm:inline">{label}</span>
+                  </button>
                 ))}
               </div>
 
@@ -1030,7 +1066,7 @@ export default function DashboardPage() {
                       Generate study materials and they'll appear here, or move existing items to this folder
                     </p>
                     <button
-                      onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                      onClick={() => (document.querySelector('input[type="text"]') as HTMLInputElement)?.focus()}
                       className="btn-primary"
                     >
                       Generate Content
@@ -1131,7 +1167,7 @@ export default function DashboardPage() {
                       Start by generating notes, flashcards, or quizzes from URLs, PDFs, images, or YouTube videos
                     </p>
                     <button
-                      onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                      onClick={() => (document.querySelector('input[type="text"]') as HTMLInputElement)?.focus()}
                       className="btn-primary"
                     >
                       Generate Content
@@ -1310,7 +1346,7 @@ export default function DashboardPage() {
                     </p>
                     {!isViewingFolderContents && (
                       <button
-                        onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                        onClick={() => (document.querySelector('input[type="text"]') as HTMLInputElement)?.focus()}
                         className="btn-primary"
                       >
                         Generate Content
