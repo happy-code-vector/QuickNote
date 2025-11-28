@@ -83,6 +83,7 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"folder" | "material" | "item">("folder"); // Three view modes
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [isViewingFolderContents, setIsViewingFolderContents] = useState(false);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
@@ -376,6 +377,7 @@ export default function DashboardPage() {
             sourceId,
             sourceName,
             sourceType: contentType,
+            folderId: selectedFolderId, // Save to current folder
           });
         } else {
           errors.push("Notes: Invalid content structure");
@@ -400,6 +402,7 @@ export default function DashboardPage() {
             sourceName,
             sourceType: contentType,
             data: flashcardResult.data,
+            folderId: selectedFolderId, // Save to current folder
           });
         } else {
           errors.push("Flashcards: No valid flashcards generated");
@@ -424,6 +427,7 @@ export default function DashboardPage() {
             sourceId,
             sourceName,
             sourceType: contentType,
+            folderId: selectedFolderId, // Save to current folder
           });
         } else {
           errors.push("Quiz: No valid questions generated");
@@ -479,8 +483,13 @@ export default function DashboardPage() {
     return date.toLocaleDateString();
   };
 
-  // Group content by source material
-  const groupedBySource = content.reduce((acc, item) => {
+  // Filter content by current folder (for Sources and Items views)
+  const folderContent = viewMode === "folder" 
+    ? content // In folder view, don't filter (handled by folder selection)
+    : content.filter((item) => item.folderId === selectedFolderId);
+
+  // Group content by source material (filtered by folder)
+  const groupedBySource = folderContent.reduce((acc, item) => {
     const sourceId = item.sourceId || "unknown";
     if (!acc[sourceId]) {
       acc[sourceId] = {
@@ -497,9 +506,9 @@ export default function DashboardPage() {
 
   const sources = Object.values(groupedBySource);
 
-  // Get items to display based on view mode
+  // Get items to display based on view mode (filtered by folder)
   const displayItems = viewMode === "item" 
-    ? content 
+    ? folderContent 
     : selectedSourceId 
       ? groupedBySource[selectedSourceId]?.items || []
       : [];
@@ -652,7 +661,20 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
+                {/* Current Folder Indicator (for Sources and Items views) */}
+                {viewMode !== "folder" && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <span className="text-lg">
+                      {selectedFolderId === null ? "📂" : folders.find((f) => f.id === selectedFolderId)?.icon}
+                    </span>
+                    <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                      {selectedFolderId === null ? "General" : folders.find((f) => f.id === selectedFolderId)?.name}
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 {/* View Mode Toggle - Three Modes */}
                 <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-11">
@@ -660,7 +682,7 @@ export default function DashboardPage() {
                     onClick={() => {
                       setViewMode("folder");
                       setSelectedSourceId(null);
-                      setSelectedFolderId(null);
+                      setIsViewingFolderContents(false);
                     }}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       viewMode === "folder"
@@ -677,7 +699,6 @@ export default function DashboardPage() {
                     onClick={() => {
                       setViewMode("material");
                       setSelectedSourceId(null);
-                      setSelectedFolderId(null);
                     }}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       viewMode === "material"
@@ -694,7 +715,6 @@ export default function DashboardPage() {
                     onClick={() => {
                       setViewMode("item");
                       setSelectedSourceId(null);
-                      setSelectedFolderId(null);
                     }}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       viewMode === "item"
@@ -718,7 +738,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Folder View - Show Folders */}
-            {viewMode === "folder" && selectedFolderId === null && (
+            {viewMode === "folder" && !isViewingFolderContents && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Create Folder Card */}
                 <button
@@ -736,7 +756,10 @@ export default function DashboardPage() {
 
                 {/* General Folder */}
                 <button
-                  onClick={() => setSelectedFolderId(null)}
+                  onClick={() => {
+                    setSelectedFolderId(null);
+                    setIsViewingFolderContents(true);
+                  }}
                   className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-lg min-h-[180px]"
                 >
                   <div className="flex flex-col items-center gap-3 h-full justify-center">
@@ -771,7 +794,10 @@ export default function DashboardPage() {
                     </button>
 
                     <button
-                      onClick={() => setSelectedFolderId(folder.id)}
+                      onClick={() => {
+                        setSelectedFolderId(folder.id);
+                        setIsViewingFolderContents(true);
+                      }}
                       className="w-full h-full"
                     >
                       <div className="flex flex-col items-center gap-3 h-full justify-center">
@@ -801,11 +827,11 @@ export default function DashboardPage() {
             )}
 
             {/* Folder View - Show Items in Selected Folder */}
-            {viewMode === "folder" && selectedFolderId !== null && (
+            {viewMode === "folder" && isViewingFolderContents && (
               <div>
                 {/* Breadcrumb */}
                 <button
-                  onClick={() => setSelectedFolderId(null)}
+                  onClick={() => setIsViewingFolderContents(false)}
                   className="mb-4 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
                 >
                   <span className="material-symbols-outlined">arrow_back</span>
