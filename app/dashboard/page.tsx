@@ -8,6 +8,8 @@ import { useToast } from "../components/ToastContainer";
 import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { Tooltip } from "../components/Tooltip";
+import { CreateFolderModal } from "../components/CreateFolderModal";
+import { MoveFolderModal } from "../components/MoveFolderModal";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -41,6 +43,15 @@ interface ContentItem {
   sourceId?: string;
   sourceName?: string;
   sourceType?: string;
+  folderId?: string | null; // Add folder support
+}
+
+interface Folder {
+  id: string;
+  name: string;
+  icon: string;
+  createdAt: string;
+  itemCount: number;
 }
 
 // Document structure matching iOS app
@@ -69,8 +80,13 @@ export default function DashboardPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState<number | string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"item" | "material">("material"); // Default to material view like iOS
+  const [viewMode, setViewMode] = useState<"folder" | "material" | "item">("folder"); // Three view modes
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
+  const [itemToMove, setItemToMove] = useState<ContentItem | null>(null);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -124,8 +140,102 @@ export default function DashboardPage() {
       if (storedContent) {
         setContent(JSON.parse(storedContent));
       }
+
+      // Load folders
+      const storedFolders = localStorage.getItem(`folders_${profileData.id}`);
+      if (storedFolders) {
+        setFolders(JSON.parse(storedFolders));
+      }
     }
   }, [router]);
+
+  // Create folder
+  const handleCreateFolder = (folderName: string, folderIcon: string) => {
+    if (!profile) return;
+
+    const newFolder: Folder = {
+      id: `folder_${Date.now()}`,
+      name: folderName,
+      icon: folderIcon,
+      createdAt: new Date().toISOString(),
+      itemCount: 0,
+    };
+
+    const updatedFolders = [...folders, newFolder];
+    setFolders(updatedFolders);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`folders_${profile.id}`, JSON.stringify(updatedFolders));
+    }
+
+    showToast(`Folder "${folderName}" created successfully!`, "success");
+  };
+
+  // Move item to folder
+  const handleMoveToFolder = (folderId: string | null) => {
+    if (!itemToMove || !profile) return;
+
+    const updatedContent = content.map((item) =>
+      item.id === itemToMove.id ? { ...item, folderId } : item
+    );
+
+    setContent(updatedContent);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+    }
+
+    // Update folder item counts
+    updateFolderCounts(updatedContent);
+
+    const folderName = folderId
+      ? folders.find((f) => f.id === folderId)?.name || "folder"
+      : "General";
+
+    showToast(`Moved to ${folderName}`, "success");
+    setItemToMove(null);
+  };
+
+  // Update folder item counts
+  const updateFolderCounts = (contentList: ContentItem[]) => {
+    const updatedFolders = folders.map((folder) => ({
+      ...folder,
+      itemCount: contentList.filter((item) => item.folderId === folder.id).length,
+    }));
+
+    setFolders(updatedFolders);
+
+    if (profile && typeof window !== "undefined") {
+      localStorage.setItem(`folders_${profile.id}`, JSON.stringify(updatedFolders));
+    }
+  };
+
+  // Delete folder
+  const handleDeleteFolder = (folderId: string) => {
+    if (!profile) return;
+
+    const folder = folders.find((f) => f.id === folderId);
+    if (!folder) return;
+
+    // Move all items in this folder to General (null)
+    const updatedContent = content.map((item) =>
+      item.folderId === folderId ? { ...item, folderId: null } : item
+    );
+
+    setContent(updatedContent);
+
+    // Remove folder
+    const updatedFolders = folders.filter((f) => f.id !== folderId);
+    setFolders(updatedFolders);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      localStorage.setItem(`folders_${profile.id}`, JSON.stringify(updatedFolders));
+    }
+
+    showToast(`Folder "${folder.name}" deleted`, "success");
+    setSelectedFolderId(null);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -544,12 +654,47 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                {/* View Mode Toggle */}
+                {/* View Mode Toggle - Three Modes */}
                 <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-11">
+                  <button
+                    onClick={() => {
+                      setViewMode("folder");
+                      setSelectedSourceId(null);
+                      setSelectedFolderId(null);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "folder"
+                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-lg">folder</span>
+                      Folders
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setViewMode("material");
+                      setSelectedSourceId(null);
+                      setSelectedFolderId(null);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "material"
+                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-lg">source</span>
+                      Sources
+                    </span>
+                  </button>
                   <button
                     onClick={() => {
                       setViewMode("item");
                       setSelectedSourceId(null);
+                      setSelectedFolderId(null);
                     }}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       viewMode === "item"
@@ -560,22 +705,6 @@ export default function DashboardPage() {
                     <span className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-lg">grid_view</span>
                       Items
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setViewMode("material");
-                      setSelectedSourceId(null);
-                    }}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "material"
-                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-lg">folder</span>
-                      Materials
                     </span>
                   </button>
                 </div>
