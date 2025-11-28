@@ -89,6 +89,8 @@ export default function DashboardPage() {
   const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
   const [itemToMove, setItemToMove] = useState<ContentItem | null>(null);
   const [sourceToMove, setSourceToMove] = useState<string | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
+  const [isDeleteFolderModalOpen, setIsDeleteFolderModalOpen] = useState(false);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -809,9 +811,8 @@ export default function DashboardPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`Delete folder "${folder.name}"? All items will be moved to General folder.`)) {
-                          handleDeleteFolder(folder.id);
-                        }
+                        setFolderToDelete(folder);
+                        setIsDeleteFolderModalOpen(true);
                       }}
                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 z-10"
                       title="Delete folder"
@@ -1198,6 +1199,27 @@ export default function DashboardPage() {
             : null
         }
         onMoveToFolder={handleMoveToFolder}
+      />
+
+      {/* Delete Folder Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteFolderModalOpen}
+        onClose={() => {
+          setIsDeleteFolderModalOpen(false);
+          setFolderToDelete(null);
+        }}
+        onConfirm={() => {
+          if (folderToDelete) {
+            handleDeleteFolder(folderToDelete.id);
+          }
+          setIsDeleteFolderModalOpen(false);
+          setFolderToDelete(null);
+        }}
+        title="Delete Folder"
+        message={`Are you sure you want to delete "${folderToDelete?.name}"? All items in this folder will be moved to General.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
       />
     </>
   );
