@@ -67,7 +67,7 @@ export default function DashboardPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [deleteItemId, setDeleteItemId] = useState<number | string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"item" | "material">("material"); // Default to material view like iOS
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -80,14 +80,33 @@ export default function DashboardPage() {
   const handleDeleteConfirm = () => {
     if (deleteItemId === null) return;
 
-    const updatedContent = content.filter((item) => item.id !== deleteItemId);
-    setContent(updatedContent);
+    // Check if it's a source ID (string) or item ID (number)
+    if (typeof deleteItemId === "string") {
+      // Delete all items from this source
+      const sourceItems = groupedBySource[deleteItemId];
+      if (!sourceItems) return;
 
-    if (profile && typeof window !== "undefined") {
-      localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      const itemCount = sourceItems.items.length;
+      const updatedContent = content.filter((item) => item.sourceId !== deleteItemId);
+      setContent(updatedContent);
+
+      if (profile && typeof window !== "undefined") {
+        localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      }
+
+      showToast(`Deleted ${itemCount} item${itemCount !== 1 ? 's' : ''} from source`, "success");
+    } else {
+      // Delete single item
+      const updatedContent = content.filter((item) => item.id !== deleteItemId);
+      setContent(updatedContent);
+
+      if (profile && typeof window !== "undefined") {
+        localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
+      }
+
+      showToast("Item deleted successfully", "success");
     }
 
-    showToast("Item deleted successfully", "success");
     setDeleteItemId(null);
   };
 
@@ -509,10 +528,22 @@ export default function DashboardPage() {
                 {sources.map((source) => (
                   <div
                     key={source.sourceId}
-                    onClick={() => setSelectedSourceId(source.sourceId)}
-                    className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 relative"
+                    className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all hover:border-blue-500 dark:hover:border-blue-500 relative"
                   >
-                    <div className="p-5">
+                    {/* Delete button - absolute positioned */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteItemId(source.sourceId as any);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg z-10"
+                      title="Delete all items from this source"
+                    >
+                      <span className="material-symbols-outlined text-lg">delete</span>
+                    </button>
+
+                    <div className="p-5 cursor-pointer" onClick={() => setSelectedSourceId(source.sourceId)}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-md p-1.5">
                           <span className="material-symbols-outlined">{getSourceIcon(source.sourceType)}</span>
@@ -531,7 +562,7 @@ export default function DashboardPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
+                    <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center cursor-pointer" onClick={() => setSelectedSourceId(source.sourceId)}>
                       <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(source.createdAt)}</span>
                       <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                         {source.items.length} item{source.items.length !== 1 ? 's' : ''}
@@ -652,8 +683,12 @@ export default function DashboardPage() {
           setDeleteItemId(null);
         }}
         onConfirm={handleDeleteConfirm}
-        title="Delete Item"
-        message="Are you sure you want to delete this item? This action cannot be undone."
+        title={typeof deleteItemId === "string" ? "Delete Source Material" : "Delete Item"}
+        message={
+          typeof deleteItemId === "string"
+            ? `Are you sure you want to delete all items from this source? This will delete ${groupedBySource[deleteItemId]?.items.length || 0} item(s). This action cannot be undone.`
+            : "Are you sure you want to delete this item? This action cannot be undone."
+        }
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
