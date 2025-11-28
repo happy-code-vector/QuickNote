@@ -906,7 +906,19 @@ export default function DashboardPage() {
 
             {/* Material View - Show Sources */}
             {viewMode === "material" && !selectedSourceId && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                {/* Back to Folders button when viewing folder contents */}
+                {isViewingFolderContents && (
+                  <button
+                    onClick={() => setIsViewingFolderContents(false)}
+                    className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
+                  >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                    Back to Folders
+                  </button>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sources.map((source) => (
                   <div
                     key={source.sourceId}
@@ -952,6 +964,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             )}
 
@@ -1007,7 +1020,19 @@ export default function DashboardPage() {
 
             {/* Item View - Show All Items */}
             {viewMode === "item" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                {/* Back to Folders button when viewing folder contents */}
+                {isViewingFolderContents && (
+                  <button
+                    onClick={() => setIsViewingFolderContents(false)}
+                    className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
+                  >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                    Back to Folders
+                  </button>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {folderContent.map((item) => (
                   <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
                     <div className="p-5">
@@ -1043,6 +1068,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             )}
           </div>
