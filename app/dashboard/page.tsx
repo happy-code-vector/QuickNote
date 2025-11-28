@@ -652,15 +652,18 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 p-2">
+              <Link href="/profile-selection" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Switch Profile">
                 <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors[profile.avatar]} shrink-0`} />
                 {sidebarExpanded && (
-                  <div className="flex flex-col">
+                  <div className="flex flex-col flex-1">
                     <h1 className="text-sm font-medium text-gray-900 dark:text-white">{profile.name}</h1>
                     <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{profile.type}</p>
                   </div>
                 )}
-              </div>
+                {sidebarExpanded && (
+                  <span className="material-symbols-outlined text-gray-400 text-sm">swap_horiz</span>
+                )}
+              </Link>
 
               <nav className="flex flex-col gap-1 mt-4">
                 <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
@@ -1016,12 +1019,22 @@ export default function DashboardPage() {
 
                 {/* Empty Folder State */}
                 {content.filter((item) => item.folderId === selectedFolderId).length === 0 && (
-                  <div className="text-center py-12">
+                  <div className="text-center py-16">
                     <div className="text-gray-400 dark:text-gray-600 mb-4">
-                      <span className="material-symbols-outlined text-6xl">folder_open</span>
+                      <span className="material-symbols-outlined text-7xl">folder_open</span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-2">This folder is empty</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">Generate content to add items to this folder</p>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      {selectedFolderId === null ? "General folder is empty" : "This folder is empty"}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      Generate study materials and they'll appear here, or move existing items to this folder
+                    </p>
+                    <button
+                      onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                      className="btn-primary"
+                    >
+                      Generate Content
+                    </button>
                   </div>
                 )}
               </div>
@@ -1106,6 +1119,25 @@ export default function DashboardPage() {
                   </div>
                 ))}
                 </div>
+
+                {/* Empty State for Sources */}
+                {sources.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <span className="material-symbols-outlined text-7xl">source</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No study materials yet</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      Start by generating notes, flashcards, or quizzes from URLs, PDFs, images, or YouTube videos
+                    </p>
+                    <button
+                      onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                      className="btn-primary"
+                    >
+                      Generate Content
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1263,6 +1295,29 @@ export default function DashboardPage() {
                   </div>
                 ))}
                 </div>
+
+                {/* Empty State for Items */}
+                {folderContent.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <span className="material-symbols-outlined text-7xl">grid_view</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No items found</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      {isViewingFolderContents 
+                        ? "This folder is empty. Generate content and move it here to organize your study materials."
+                        : "Start creating study materials from your content to see them here"}
+                    </p>
+                    {!isViewingFolderContents && (
+                      <button
+                        onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                        className="btn-primary"
+                      >
+                        Generate Content
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
