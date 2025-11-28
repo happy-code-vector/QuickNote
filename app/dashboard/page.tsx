@@ -177,8 +177,12 @@ export default function DashboardPage() {
         }
       } else {
         // For URLs and YouTube, add context like iOS app does
-        if (contentType === "url" || contentType === "youtube") {
+        if (contentType === "url") {
           contentToAnalyze = `Analyze the following link and extract all relevant information: ${contentInput}`;
+        } else if (contentType === "youtube") {
+          // YouTube needs special handling - send as file_uri
+          contentToAnalyze = contentInput; // Just the URL
+          fileMimeType = "video/youtube"; // Special marker for YouTube
         }
       }
 

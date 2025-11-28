@@ -134,6 +134,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // If YouTube video, add as file_data with file_uri
+    if (mimeType === "video/youtube" && content) {
+      // Extract the YouTube URL from the content
+      const youtubeUrl = content.replace("Analyze the following link and extract all relevant information: ", "").trim();
+      parts.push({
+        file_data: {
+          file_uri: youtubeUrl,
+        },
+      });
+    }
+
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
