@@ -483,12 +483,14 @@ export default function DashboardPage() {
     return date.toLocaleDateString();
   };
 
-  // Filter content by current folder (for Sources and Items views)
-  const folderContent = viewMode === "folder" 
-    ? content // In folder view, don't filter (handled by folder selection)
-    : content.filter((item) => item.folderId === selectedFolderId);
+  // Filter content based on context:
+  // - At folder grid: show ALL content
+  // - Inside a folder: show only that folder's content (for all views)
+  const folderContent = isViewingFolderContents
+    ? content.filter((item) => item.folderId === selectedFolderId)
+    : content;
 
-  // Group content by source material (filtered by folder)
+  // Group content by source material
   const groupedBySource = folderContent.reduce((acc, item) => {
     const sourceId = item.sourceId || "unknown";
     if (!acc[sourceId]) {
@@ -663,8 +665,8 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Library</h2>
-                {/* Current Folder Indicator (for Sources and Items views) */}
-                {viewMode !== "folder" && (
+                {/* Current Folder Indicator (for Sources and Items views when viewing folder contents) */}
+                {viewMode !== "folder" && isViewingFolderContents && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800">
                     <span className="text-lg">
                       {selectedFolderId === null ? "📂" : folders.find((f) => f.id === selectedFolderId)?.icon}
@@ -1016,7 +1018,7 @@ export default function DashboardPage() {
             {/* Item View - Show All Items */}
             {viewMode === "item" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {content.map((item) => (
+                {folderContent.map((item) => (
                   <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
                     <div className="p-5">
                       <div className="flex items-center gap-3 mb-3">
