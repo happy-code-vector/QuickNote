@@ -14,6 +14,7 @@ import { DeleteFolderModal } from "../components/DeleteFolderModal";
 import { FlashcardStudyMode } from "../components/FlashcardStudyMode";
 import { QuizStudyMode } from "../components/QuizStudyMode";
 import { RenameModal } from "../components/RenameModal";
+import { ItemActionsMenu } from "../components/ItemActionsMenu";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -952,8 +953,23 @@ export default function DashboardPage() {
                   {content
                     .filter((item) => item.folderId === selectedFolderId)
                     .map((item) => (
-                      <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                        <div className="p-5">
+                      <div key={item.id} className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                        {/* More Actions Menu - Top Right */}
+                        <div className="absolute top-3 right-3 z-10">
+                          <ItemActionsMenu
+                            onShare={() => handleShare(item)}
+                            onRename={() => {
+                              setItemToRename(item);
+                              setIsRenameModalOpen(true);
+                            }}
+                            onMove={() => {
+                              setItemToMove(item);
+                              setIsMoveFolderOpen(true);
+                            }}
+                            showMove={true}
+                          />
+                        </div>
+                        <div className="p-5 pr-12">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                               <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
@@ -985,33 +1001,6 @@ export default function DashboardPage() {
                               title="View"
                             >
                               <span className="material-symbols-outlined text-lg">visibility</span>
-                            </button>
-                            <button
-                              onClick={() => handleShare(item)}
-                              className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
-                              title="Share"
-                            >
-                              <span className="material-symbols-outlined text-lg">share</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setItemToRename(item);
-                                setIsRenameModalOpen(true);
-                              }}
-                              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
-                              title="Rename"
-                            >
-                              <span className="material-symbols-outlined text-lg">edit</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setItemToMove(item);
-                                setIsMoveFolderOpen(true);
-                              }}
-                              className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-                              title="Move to folder"
-                            >
-                              <span className="material-symbols-outlined text-lg">drive_file_move</span>
                             </button>
                             <button
                               onClick={() => handleDeleteClick(item.id)}
@@ -1133,8 +1122,23 @@ export default function DashboardPage() {
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {displayItems.map((item) => (
-                    <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                      <div className="p-5">
+                    <div key={item.id} className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                      {/* More Actions Menu - Top Right */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <ItemActionsMenu
+                          onShare={() => handleShare(item)}
+                          onRename={() => {
+                            setItemToRename(item);
+                            setIsRenameModalOpen(true);
+                          }}
+                          onMove={() => {
+                            setItemToMove(item);
+                            setIsMoveFolderOpen(true);
+                          }}
+                          showMove={isViewingFolderContents}
+                        />
+                      </div>
+                      <div className="p-5 pr-12">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                             <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
@@ -1168,37 +1172,9 @@ export default function DashboardPage() {
                             <span className="material-symbols-outlined text-lg">visibility</span>
                           </button>
                           <button
-                            onClick={() => handleShare(item)}
-                            className="text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 p-1 rounded"
-                            title="Share"
-                          >
-                            <span className="material-symbols-outlined text-lg">share</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setItemToRename(item);
-                              setIsRenameModalOpen(true);
-                            }}
-                            className="text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-1 rounded"
-                            title="Rename"
-                          >
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </button>
-                          {isViewingFolderContents && (
-                            <button
-                              onClick={() => {
-                                setItemToMove(item);
-                                setIsMoveFolderOpen(true);
-                              }}
-                              className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-1 rounded"
-                              title="Move to folder"
-                            >
-                              <span className="material-symbols-outlined text-lg">drive_file_move</span>
-                            </button>
-                          )}
-                          <button
                             onClick={() => handleDeleteClick(item.id)}
                             className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                            title="Delete"
                           >
                             <span className="material-symbols-outlined text-lg">delete</span>
                           </button>
@@ -1229,8 +1205,23 @@ export default function DashboardPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {folderContent.map((item) => (
-                  <div key={item.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                    <div className="p-5">
+                  <div key={item.id} className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow">
+                    {/* More Actions Menu - Top Right */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <ItemActionsMenu
+                        onShare={() => handleShare(item)}
+                        onRename={() => {
+                          setItemToRename(item);
+                          setIsRenameModalOpen(true);
+                        }}
+                        onMove={() => {
+                          setItemToMove(item);
+                          setIsMoveFolderOpen(true);
+                        }}
+                        showMove={isViewingFolderContents}
+                      />
+                    </div>
+                    <div className="p-5 pr-12">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                           <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
@@ -1264,37 +1255,9 @@ export default function DashboardPage() {
                           <span className="material-symbols-outlined text-lg">visibility</span>
                         </button>
                         <button
-                          onClick={() => handleShare(item)}
-                          className="text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 p-1 rounded"
-                          title="Share"
-                        >
-                          <span className="material-symbols-outlined text-lg">share</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setItemToRename(item);
-                            setIsRenameModalOpen(true);
-                          }}
-                          className="text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-1 rounded"
-                          title="Rename"
-                        >
-                          <span className="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        {isViewingFolderContents && (
-                          <button
-                            onClick={() => {
-                              setItemToMove(item);
-                              setIsMoveFolderOpen(true);
-                            }}
-                            className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-1 rounded"
-                            title="Move to folder"
-                          >
-                            <span className="material-symbols-outlined text-lg">drive_file_move</span>
-                          </button>
-                        )}
-                        <button
                           onClick={() => handleDeleteClick(item.id)}
                           className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
+                          title="Delete"
                         >
                           <span className="material-symbols-outlined text-lg">delete</span>
                         </button>
