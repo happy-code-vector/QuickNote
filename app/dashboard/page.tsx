@@ -11,6 +11,8 @@ import { Tooltip } from "../components/Tooltip";
 import { CreateFolderModal } from "../components/CreateFolderModal";
 import { MoveFolderModal } from "../components/MoveFolderModal";
 import { DeleteFolderModal } from "../components/DeleteFolderModal";
+import { FlashcardStudyMode } from "../components/FlashcardStudyMode";
+import { QuizStudyMode } from "../components/QuizStudyMode";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -92,6 +94,7 @@ export default function DashboardPage() {
   const [sourceToMove, setSourceToMove] = useState<string | null>(null);
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [isDeleteFolderModalOpen, setIsDeleteFolderModalOpen] = useState(false);
+  const [studyModeItem, setStudyModeItem] = useState<ContentItem | null>(null);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -919,6 +922,15 @@ export default function DashboardPage() {
                         <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
                           <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
                           <div className="flex gap-2">
+                            {(item.type === "flashcards" || item.type === "quiz") && (
+                              <button
+                                onClick={() => setStudyModeItem(item)}
+                                className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                                title="Study Mode"
+                              >
+                                <span className="material-symbols-outlined text-lg">school</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setSelectedContent(item);
@@ -1072,6 +1084,15 @@ export default function DashboardPage() {
                       <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
                         <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
                         <div className="flex gap-2">
+                          {(item.type === "flashcards" || item.type === "quiz") && (
+                            <button
+                              onClick={() => setStudyModeItem(item)}
+                              className="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 p-1 rounded"
+                              title="Study Mode"
+                            >
+                              <span className="material-symbols-outlined text-lg">school</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setSelectedContent(item);
@@ -1141,6 +1162,15 @@ export default function DashboardPage() {
                     <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-3 flex justify-between items-center">
                       <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(item.createdAt)}</span>
                       <div className="flex gap-2">
+                        {(item.type === "flashcards" || item.type === "quiz") && (
+                          <button
+                            onClick={() => setStudyModeItem(item)}
+                            className="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 p-1 rounded"
+                            title="Study Mode"
+                          >
+                            <span className="material-symbols-outlined text-lg">school</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             setSelectedContent(item);
@@ -1253,6 +1283,21 @@ export default function DashboardPage() {
         folderName={folderToDelete?.name || ""}
         itemCount={folderToDelete ? content.filter((item) => item.folderId === folderToDelete.id).length : 0}
       />
+
+      {/* Study Mode Overlays */}
+      {studyModeItem && studyModeItem.type === "flashcards" && studyModeItem.data?.flashcards && (
+        <FlashcardStudyMode
+          flashcards={studyModeItem.data.flashcards}
+          onClose={() => setStudyModeItem(null)}
+        />
+      )}
+
+      {studyModeItem && studyModeItem.type === "quiz" && studyModeItem.data?.quizzes && (
+        <QuizStudyMode
+          quizzes={studyModeItem.data.quizzes}
+          onClose={() => setStudyModeItem(null)}
+        />
+      )}
     </>
   );
 }

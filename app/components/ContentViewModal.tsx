@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { FlashcardStudyMode } from "./FlashcardStudyMode";
+import { QuizStudyMode } from "./QuizStudyMode";
 
 interface ContentViewModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface ContentViewModalProps {
 
 export function ContentViewModal({ isOpen, onClose, content }: ContentViewModalProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isStudyMode, setIsStudyMode] = useState(false);
   const [messages, setMessages] = useState<Array<{
     id: string;
     sender: "user" | "ai" | "typing" | "default";
@@ -50,8 +53,9 @@ export function ContentViewModal({ isOpen, onClose, content }: ContentViewModalP
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      // Reset chat when modal opens
+      // Reset chat and study mode when modal opens
       setIsChatOpen(false);
+      setIsStudyMode(false);
       setMessages([
         {
           id: "default",
@@ -476,18 +480,31 @@ export function ContentViewModal({ isOpen, onClose, content }: ContentViewModalP
         {/* Footer */}
         <div className="border-t border-gray-200 dark:border-gray-800 px-6 py-4 bg-gray-50 dark:bg-gray-800/50">
           <div className="flex justify-between items-center">
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isChatOpen
-                  ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  : "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
-                }`}
-            >
-              <span className="material-symbols-outlined text-sm">
-                {isChatOpen ? "chat_bubble" : "chat"}
-              </span>
-              {isChatOpen ? "Hide Chat" : "Chat with AI"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isChatOpen
+                    ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                  }`}
+              >
+                <span className="material-symbols-outlined text-sm">
+                  {isChatOpen ? "chat_bubble" : "chat"}
+                </span>
+                {isChatOpen ? "Hide Chat" : "Chat with AI"}
+              </button>
+
+              {/* Study Mode Button - Only for flashcards and quiz */}
+              {(content.type === "flashcards" || content.type === "quiz") && (
+                <button
+                  onClick={() => setIsStudyMode(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">school</span>
+                  Study Mode
+                </button>
+              )}
+            </div>
             <div className="flex gap-3">
               <button onClick={onClose} className="btn-secondary">
                 Close
@@ -496,6 +513,21 @@ export function ContentViewModal({ isOpen, onClose, content }: ContentViewModalP
           </div>
         </div>
       </div>
+
+      {/* Study Mode Overlays */}
+      {isStudyMode && content.type === "flashcards" && content.data?.flashcards && (
+        <FlashcardStudyMode
+          flashcards={content.data.flashcards}
+          onClose={() => setIsStudyMode(false)}
+        />
+      )}
+
+      {isStudyMode && content.type === "quiz" && content.data?.quizzes && (
+        <QuizStudyMode
+          quizzes={content.data.quizzes}
+          onClose={() => setIsStudyMode(false)}
+        />
+      )}
     </div>
   );
 }
