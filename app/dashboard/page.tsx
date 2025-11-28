@@ -7,6 +7,7 @@ import { ProcessingModal } from "../components/ProcessingModal";
 import { useToast } from "../components/ToastContainer";
 import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Tooltip } from "../components/Tooltip";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -509,14 +510,18 @@ export default function DashboardPage() {
                   <div
                     key={source.sourceId}
                     onClick={() => setSelectedSourceId(source.sourceId)}
-                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer hover:border-blue-500 dark:hover:border-blue-500"
+                    className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 relative"
                   >
                     <div className="p-5">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-md p-1.5">
                           <span className="material-symbols-outlined">{getSourceIcon(source.sourceType)}</span>
                         </div>
-                        <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{source.sourceName}</h3>
+                        <Tooltip content={source.sourceName} className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">
+                            {source.sourceName}
+                          </h3>
+                        </Tooltip>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {source.items.map((item) => (
@@ -555,7 +560,9 @@ export default function DashboardPage() {
                           <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                             <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
                           </div>
-                          <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
+                          <Tooltip content={item.title} className="flex-1 min-w-0">
+                            <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{item.title}</h3>
+                          </Tooltip>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
                       </div>
@@ -595,7 +602,9 @@ export default function DashboardPage() {
                         <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                           <span className="material-symbols-outlined">{contentIcons[item.type]}</span>
                         </div>
-                        <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{item.title}</h3>
+                        <Tooltip content={item.title} className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{item.title}</h3>
+                        </Tooltip>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
                     </div>

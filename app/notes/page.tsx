@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Tooltip } from "../components/Tooltip";
 
 interface ContentItem {
   id: number;
@@ -115,7 +116,9 @@ export default function NotesPage() {
                     <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md p-1.5">
                       <span className="material-symbols-outlined">description</span>
                     </div>
-                    <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{note.title}</h3>
+                    <Tooltip content={note.title} className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{note.title}</h3>
+                    </Tooltip>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.description}</p>
                 </div>

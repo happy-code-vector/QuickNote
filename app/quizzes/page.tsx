@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ContentViewModal } from "../components/ContentViewModal";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Tooltip } from "../components/Tooltip";
 
 interface ContentItem {
   id: number;
@@ -115,7 +116,9 @@ export default function QuizzesPage() {
                     <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-md p-1.5">
                       <span className="material-symbols-outlined">quiz</span>
                     </div>
-                    <h3 className="text-base font-semibold flex-1 truncate text-gray-900 dark:text-white">{quiz.title}</h3>
+                    <Tooltip content={quiz.title} className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold truncate text-gray-900 dark:text-white">{quiz.title}</h3>
+                    </Tooltip>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{quiz.description}</p>
                 </div>
