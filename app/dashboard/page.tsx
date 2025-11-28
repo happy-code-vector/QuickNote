@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isMoveFolderOpen, setIsMoveFolderOpen] = useState(false);
   const [itemToMove, setItemToMove] = useState<ContentItem | null>(null);
+  const [sourceToMove, setSourceToMove] = useState<string | null>(null);
 
   const handleDeleteClick = (itemId: number) => {
     setDeleteItemId(itemId);
@@ -172,13 +173,29 @@ export default function DashboardPage() {
     showToast(`Folder "${folderName}" created successfully!`, "success");
   };
 
-  // Move item to folder
+  // Move item(s) to folder
   const handleMoveToFolder = (folderId: string | null) => {
-    if (!itemToMove || !profile) return;
+    if (!profile) return;
 
-    const updatedContent = content.map((item) =>
-      item.id === itemToMove.id ? { ...item, folderId } : item
-    );
+    let updatedContent;
+    let itemCount = 0;
+
+    // Check if moving a single item or all items from a source
+    if (sourceToMove) {
+      // Move all items from this source
+      updatedContent = content.map((item) =>
+        item.sourceId === sourceToMove ? { ...item, folderId } : item
+      );
+      itemCount = content.filter((item) => item.sourceId === sourceToMove).length;
+    } else if (itemToMove) {
+      // Move single item
+      updatedContent = content.map((item) =>
+        item.id === itemToMove.id ? { ...item, folderId } : item
+      );
+      itemCount = 1;
+    } else {
+      return;
+    }
 
     setContent(updatedContent);
 
@@ -193,8 +210,12 @@ export default function DashboardPage() {
       ? folders.find((f) => f.id === folderId)?.name || "folder"
       : "General";
 
-    showToast(`Moved to ${folderName}`, "success");
+    showToast(
+      `Moved ${itemCount} item${itemCount !== 1 ? 's' : ''} to ${folderName}`,
+      "success"
+    );
     setItemToMove(null);
+    setSourceToMove(null);
   };
 
   // Update folder item counts
@@ -678,25 +699,27 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                {/* View Mode Toggle - Three Modes */}
+                {/* View Mode Toggle - Show Folders option only when not viewing folder contents */}
                 <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-11">
-                  <button
-                    onClick={() => {
-                      setViewMode("folder");
-                      setSelectedSourceId(null);
-                      setIsViewingFolderContents(false);
-                    }}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "folder"
-                        ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-lg">folder</span>
-                      Folders
-                    </span>
-                  </button>
+                  {!isViewingFolderContents && (
+                    <button
+                      onClick={() => {
+                        setViewMode("folder");
+                        setSelectedSourceId(null);
+                        setIsViewingFolderContents(false);
+                      }}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        viewMode === "folder"
+                          ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-lg">folder</span>
+                        Folders
+                      </span>
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setViewMode("material");
@@ -761,6 +784,7 @@ export default function DashboardPage() {
                   onClick={() => {
                     setSelectedFolderId(null);
                     setIsViewingFolderContents(true);
+                    setViewMode("item"); // Switch to Items view when entering folder
                   }}
                   className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-lg min-h-[180px]"
                 >
@@ -799,6 +823,7 @@ export default function DashboardPage() {
                       onClick={() => {
                         setSelectedFolderId(folder.id);
                         setIsViewingFolderContents(true);
+                        setViewMode("item"); // Switch to Items view when entering folder
                       }}
                       className="w-full h-full"
                     >
@@ -833,7 +858,10 @@ export default function DashboardPage() {
               <div>
                 {/* Breadcrumb */}
                 <button
-                  onClick={() => setIsViewingFolderContents(false)}
+                  onClick={() => {
+                    setIsViewingFolderContents(false);
+                    setViewMode("folder");
+                  }}
                   className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
                 >
                   <span className="material-symbols-outlined">arrow_back</span>
@@ -910,7 +938,10 @@ export default function DashboardPage() {
                 {/* Back to Folders button when viewing folder contents */}
                 {isViewingFolderContents && (
                   <button
-                    onClick={() => setIsViewingFolderContents(false)}
+                    onClick={() => {
+                      setIsViewingFolderContents(false);
+                      setViewMode("folder");
+                    }}
                     className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
                   >
                     <span className="material-symbols-outlined">arrow_back</span>
@@ -924,18 +955,33 @@ export default function DashboardPage() {
                     key={source.sourceId}
                     className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all hover:border-blue-500 dark:hover:border-blue-500 relative"
                   >
-                    {/* Delete button - absolute positioned */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteItemId(source.sourceId as any);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg z-10"
-                      title="Delete all items from this source"
-                    >
-                      <span className="material-symbols-outlined text-lg">delete</span>
-                    </button>
+                    {/* Action buttons - absolute positioned */}
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
+                      {isViewingFolderContents && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSourceToMove(source.sourceId);
+                            setIsMoveFolderOpen(true);
+                          }}
+                          className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 shadow-lg"
+                          title="Move all items from this source to another folder"
+                        >
+                          <span className="material-symbols-outlined text-lg">drive_file_move</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteItemId(source.sourceId as any);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg"
+                        title="Delete all items from this source"
+                      >
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
 
                     <div className="p-5 cursor-pointer" onClick={() => setSelectedSourceId(source.sourceId)}>
                       <div className="flex items-center gap-3 mb-3">
@@ -1004,6 +1050,18 @@ export default function DashboardPage() {
                           >
                             <span className="material-symbols-outlined text-lg">visibility</span>
                           </button>
+                          {isViewingFolderContents && (
+                            <button
+                              onClick={() => {
+                                setItemToMove(item);
+                                setIsMoveFolderOpen(true);
+                              }}
+                              className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-1 rounded"
+                              title="Move to folder"
+                            >
+                              <span className="material-symbols-outlined text-lg">drive_file_move</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteClick(item.id)}
                             className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
@@ -1024,7 +1082,10 @@ export default function DashboardPage() {
                 {/* Back to Folders button when viewing folder contents */}
                 {isViewingFolderContents && (
                   <button
-                    onClick={() => setIsViewingFolderContents(false)}
+                    onClick={() => {
+                      setIsViewingFolderContents(false);
+                      setViewMode("folder");
+                    }}
                     className="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
                   >
                     <span className="material-symbols-outlined">arrow_back</span>
@@ -1058,6 +1119,18 @@ export default function DashboardPage() {
                         >
                           <span className="material-symbols-outlined text-lg">visibility</span>
                         </button>
+                        {isViewingFolderContents && (
+                          <button
+                            onClick={() => {
+                              setItemToMove(item);
+                              setIsMoveFolderOpen(true);
+                            }}
+                            className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-1 rounded"
+                            title="Move to folder"
+                          >
+                            <span className="material-symbols-outlined text-lg">drive_file_move</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteClick(item.id)}
                           className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded"
@@ -1111,9 +1184,19 @@ export default function DashboardPage() {
 
       <MoveFolderModal
         isOpen={isMoveFolderOpen}
-        onClose={() => setIsMoveFolderOpen(false)}
+        onClose={() => {
+          setIsMoveFolderOpen(false);
+          setItemToMove(null);
+          setSourceToMove(null);
+        }}
         folders={folders}
-        currentFolderId={itemToMove?.folderId || null}
+        currentFolderId={
+          itemToMove?.folderId !== undefined
+            ? itemToMove.folderId
+            : sourceToMove
+            ? content.find((item) => item.sourceId === sourceToMove)?.folderId || null
+            : null
+        }
         onMoveToFolder={handleMoveToFolder}
       />
     </>
