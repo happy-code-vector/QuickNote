@@ -98,7 +98,7 @@ function cleanJSONString(jsonString: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, content } = await request.json();
+    const { type, content, fileData, mimeType } = await request.json();
 
     if (!GEMINI_API_KEY) {
       return NextResponse.json(
@@ -121,6 +121,19 @@ export async function POST(request: NextRequest) {
 
     const fullPrompt = `${prompt}\n\nCONTENT:\n${content}`;
 
+    // Prepare parts for Gemini API
+    const parts: any[] = [{ text: fullPrompt }];
+
+    // If file data is provided (image or PDF), add it as inline data
+    if (fileData) {
+      parts.push({
+        inlineData: {
+          mimeType: mimeType || "application/pdf",
+          data: fileData,
+        },
+      });
+    }
+
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
@@ -129,7 +142,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         contents: [
           {
-            parts: [{ text: fullPrompt }],
+            parts: parts,
           },
         ],
         generationConfig: {

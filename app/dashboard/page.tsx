@@ -146,32 +146,68 @@ export default function DashboardPage() {
       const sourceText = selectedFile ? selectedFile.name : contentInput;
 
       let contentToAnalyze = contentInput;
+      let fileData: string | null = null;
+      let fileMimeType: string | null = null;
 
-      // For files, read the content (for demo, we'll use filename)
+      // Prepare content based on type
       if (selectedFile) {
-        if (contentType === "image") {
-          contentToAnalyze = `Image file: ${selectedFile.name}`;
-        } else if (contentType === "pdf") {
-          contentToAnalyze = `PDF file: ${selectedFile.name}`;
+        if (contentType === "image" || contentType === "pdf") {
+          // For images and PDFs, convert to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1]; // Remove data:...;base64, prefix
+              resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(selectedFile);
+          });
+          
+          try {
+            fileData = await base64Promise;
+            fileMimeType = selectedFile.type || (contentType === "pdf" ? "application/pdf" : "image/jpeg");
+            contentToAnalyze = contentType === "image" 
+              ? "Analyze this image and extract all relevant information."
+              : "Analyze this PDF document and extract all relevant information.";
+          } catch (error) {
+            showToast(`Failed to read ${contentType} file`, "error");
+            setIsProcessing(false);
+            return;
+          }
+        }
+      } else {
+        // For URLs and YouTube, add context like iOS app does
+        if (contentType === "url" || contentType === "youtube") {
+          contentToAnalyze = `Analyze the following link and extract all relevant information: ${contentInput}`;
         }
       }
+
+      // Prepare request body
+      const requestBody = {
+        type: "",
+        content: contentToAnalyze,
+        ...(fileData && { 
+          fileData,
+          mimeType: fileMimeType
+        })
+      };
 
       // Generate all three types in parallel
       const [noteResponse, flashcardResponse, quizResponse] = await Promise.all([
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "note", content: contentToAnalyze }),
+          body: JSON.stringify({ ...requestBody, type: "note" }),
         }),
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "flashcard", content: contentToAnalyze }),
+          body: JSON.stringify({ ...requestBody, type: "flashcard" }),
         }),
         fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "quiz", content: contentToAnalyze }),
+          body: JSON.stringify({ ...requestBody, type: "quiz" }),
         }),
       ]);
 
