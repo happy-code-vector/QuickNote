@@ -3,13 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 
 interface ItemActionsMenuProps {
-  onShare: () => void;
   onRename: () => void;
   onMove: () => void;
   showMove?: boolean;
 }
 
-export function ItemActionsMenu({ onShare, onRename, onMove, showMove = true }: ItemActionsMenuProps) {
+export function ItemActionsMenu({ onRename, onMove, showMove = true }: ItemActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -43,18 +42,6 @@ export function ItemActionsMenu({ onShare, onRename, onMove, showMove = true }: 
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare();
-              setIsOpen(false);
-            }}
-
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-3"
-          >
-            <span className="material-symbols-outlined text-lg text-cyan-600">share</span>
-            Share
-          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();

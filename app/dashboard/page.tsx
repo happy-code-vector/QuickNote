@@ -957,7 +957,6 @@ export default function DashboardPage() {
                         {/* More Actions Menu - Top Right */}
                         <div className="absolute top-3 right-3 z-10">
                           <ItemActionsMenu
-                            onShare={() => handleShare(item)}
                             onRename={() => {
                               setItemToRename(item);
                               setIsRenameModalOpen(true);
@@ -1126,7 +1125,6 @@ export default function DashboardPage() {
                       {/* More Actions Menu - Top Right */}
                       <div className="absolute top-3 right-3 z-10">
                         <ItemActionsMenu
-                          onShare={() => handleShare(item)}
                           onRename={() => {
                             setItemToRename(item);
                             setIsRenameModalOpen(true);
@@ -1209,7 +1207,6 @@ export default function DashboardPage() {
                     {/* More Actions Menu - Top Right */}
                     <div className="absolute top-3 right-3 z-10">
                       <ItemActionsMenu
-                        onShare={() => handleShare(item)}
                         onRename={() => {
                           setItemToRename(item);
                           setIsRenameModalOpen(true);

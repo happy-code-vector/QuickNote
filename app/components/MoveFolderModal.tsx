@@ -47,10 +47,11 @@ export function MoveFolderModal({
         <div className="p-4 max-h-96 overflow-y-auto">
           {/* No Folder Option */}
           <button
-            onClick={() => handleMove(null)}
+            onClick={() => currentFolderId !== null && handleMove(null)}
+            disabled={currentFolderId === null}
             className={`w-full flex items-center gap-3 p-4 rounded-lg mb-2 transition-all ${
               currentFolderId === null
-                ? "bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-500"
+                ? "bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed"
                 : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
             }`}
           >
@@ -59,38 +60,44 @@ export function MoveFolderModal({
             </div>
             <div className="flex-1 text-left">
               <p className="font-medium text-gray-900 dark:text-white">General</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Default folder</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {currentFolderId === null ? "Current location" : "Default folder"}
+              </p>
             </div>
             {currentFolderId === null && (
-              <span className="material-symbols-outlined text-purple-600">check_circle</span>
+              <span className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">Current</span>
             )}
           </button>
 
           {/* User Folders */}
-          {folders.map((folder) => (
-            <button
-              key={folder.id}
-              onClick={() => handleMove(folder.id)}
-              className={`w-full flex items-center gap-3 p-4 rounded-lg mb-2 transition-all ${
-                currentFolderId === folder.id
-                  ? "bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-500"
-                  : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center text-2xl border border-purple-200 dark:border-purple-800">
-                {folder.icon}
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900 dark:text-white">{folder.name}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {folder.itemCount} item{folder.itemCount !== 1 ? "s" : ""}
-                </p>
-              </div>
-              {currentFolderId === folder.id && (
-                <span className="material-symbols-outlined text-purple-600">check_circle</span>
-              )}
-            </button>
-          ))}
+          {folders.map((folder) => {
+            const isCurrent = currentFolderId === folder.id;
+            return (
+              <button
+                key={folder.id}
+                onClick={() => !isCurrent && handleMove(folder.id)}
+                disabled={isCurrent}
+                className={`w-full flex items-center gap-3 p-4 rounded-lg mb-2 transition-all ${
+                  isCurrent
+                    ? "bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed"
+                    : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center text-2xl border border-purple-200 dark:border-purple-800">
+                  {folder.icon}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-gray-900 dark:text-white">{folder.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {isCurrent ? "Current location" : `${folder.itemCount} item${folder.itemCount !== 1 ? "s" : ""}`}
+                  </p>
+                </div>
+                {isCurrent && (
+                  <span className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">Current</span>
+                )}
+              </button>
+            );
+          })}
 
           {folders.length === 0 && (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
