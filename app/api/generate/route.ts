@@ -122,20 +122,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    const fullPrompt = `${prompt}\n\nCONTENT:\n${content}`;
-
     // Prepare parts for Gemini API
-    const parts: any[] = [{ text: fullPrompt }];
+    const parts: any[] = [];
 
-    // If file data is provided (image or PDF), add it as inline data
-    // Note: URLs and YouTube links are sent as text only (matching iOS app)
-    if (fileData && mimeType !== "video/youtube") {
+    // Handle YouTube videos using File API (as per Google's video understanding docs)
+    if (mimeType === "video/youtube" && content) {
+      // For YouTube, we need to extract the video URL and use fileData
+      const youtubeUrl = content.replace("Analyze the following link: ", "").trim();
+      
       parts.push({
-        inlineData: {
-          mimeType: mimeType || "application/pdf",
-          data: fileData,
+        fileData: {
+          mimeType: "video/mp4", // YouTube videos are treated as video/mp4
+          fileUri: youtubeUrl,
         },
       });
+      
+      // Add the prompt after the video
+      parts.push({ text: prompt });
+    } else {
+      // For non-YouTube content, add prompt first
+      const fullPrompt = `${prompt}\n\nCONTENT:\n${content}`;
+      parts.push({ text: fullPrompt });
+
+      // If file data is provided (image or PDF), add it as inline data
+      if (fileData) {
+        parts.push({
+          inlineData: {
+            mimeType: mimeType || "application/pdf",
+            data: fileData,
+          },
+        });
+      }
     }
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -150,8 +167,8 @@ export async function POST(request: NextRequest) {
           },
         ],
         generationConfig: {
-          // Match iOS token allocation: 16384 for URLs, 65536 for PDFs
-          maxOutputTokens: fileData ? 65536 : 16384,
+          // Token allocation: 65536 for PDFs and YouTube videos, 16384 for URLs
+          maxOutputTokens: (fileData || mimeType === "video/youtube") ? 65536 : 16384,
         },
       }),
     });

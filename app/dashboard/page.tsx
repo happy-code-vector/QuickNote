@@ -176,10 +176,13 @@ export default function DashboardPage() {
           }
         }
       } else {
-        // For URLs and YouTube, add context like iOS app does
-        // Both are treated as text-based analysis (matching iOS implementation)
-        if (contentType === "url" || contentType === "youtube") {
+        // For URLs and YouTube, add context
+        if (contentType === "url") {
           contentToAnalyze = `Analyze the following link: ${contentInput}`;
+        } else if (contentType === "youtube") {
+          // YouTube videos use File API with video URI
+          contentToAnalyze = `Analyze the following link: ${contentInput}`;
+          fileMimeType = "video/youtube"; // Special marker for YouTube
         }
       }
 
@@ -187,9 +190,11 @@ export default function DashboardPage() {
       const requestBody = {
         type: "",
         content: contentToAnalyze,
-        ...(fileData && { 
-          fileData,
+        ...(fileMimeType && { 
           mimeType: fileMimeType
+        }),
+        ...(fileData && { 
+          fileData
         })
       };
 
