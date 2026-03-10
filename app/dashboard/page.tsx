@@ -15,6 +15,10 @@ import { FlashcardStudyMode } from "../components/FlashcardStudyMode";
 import { QuizStudyMode } from "../components/QuizStudyMode";
 import { RenameModal } from "../components/RenameModal";
 import { ItemActionsMenu } from "../components/ItemActionsMenu";
+import { PaywallModal } from "../components/PaywallModal";
+import { UsageIndicator } from "../components/UsageIndicator";
+import { canGenerate, incrementUsage } from "../lib/subscription";
+import { syncSubscriptionFromFirebase, createOrUpdateFirebaseUser } from "../lib/firebaseSubscription";
 
 const avatarColors: Record<string, string> = {
   "avatar-1": "from-blue-400 to-purple-400",
@@ -99,6 +103,8 @@ export default function DashboardPage() {
   const [studyModeItem, setStudyModeItem] = useState<ContentItem | null>(null);
   const [itemToRename, setItemToRename] = useState<ContentItem | null>(null);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [remainingGenerations, setRemainingGenerations] = useState(3);
 
   // Toggle sidebar and persist state
   const toggleSidebar = () => {
@@ -190,32 +196,45 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const currentProfile = localStorage.getItem("currentProfile");
-      if (!currentProfile) {
-        router.push("/profile-selection");
-        return;
-      }
-      setProfile(JSON.parse(currentProfile));
+    const initializeDashboard = async () => {
+      if (typeof window !== "undefined") {
+        const currentProfile = localStorage.getItem("currentProfile");
+        if (!currentProfile) {
+          router.push("/profile-selection");
+          return;
+        }
+        const profileData = JSON.parse(currentProfile);
+        setProfile(profileData);
 
-      const profileData = JSON.parse(currentProfile);
-      const storedContent = localStorage.getItem(`content_${profileData.id}`);
-      if (storedContent) {
-        setContent(JSON.parse(storedContent));
-      }
+        // Sync subscription from Firebase
+        const email = profileData.email || "demo@example.com";
+        try {
+          await createOrUpdateFirebaseUser(email);
+          await syncSubscriptionFromFirebase(email, profileData.id);
+        } catch (error) {
+          console.log("Firebase sync skipped:", error);
+        }
 
-      // Load sidebar state
-      const storedSidebarState = localStorage.getItem("sidebarExpanded");
-      if (storedSidebarState !== null) {
-        setSidebarExpanded(storedSidebarState === "true");
-      }
+        const storedContent = localStorage.getItem(`content_${profileData.id}`);
+        if (storedContent) {
+          setContent(JSON.parse(storedContent));
+        }
 
-      // Load folders
-      const storedFolders = localStorage.getItem(`folders_${profileData.id}`);
-      if (storedFolders) {
-        setFolders(JSON.parse(storedFolders));
+        // Load sidebar state
+        const storedSidebarState = localStorage.getItem("sidebarExpanded");
+        if (storedSidebarState !== null) {
+          setSidebarExpanded(storedSidebarState === "true");
+        }
+
+        // Load folders
+        const storedFolders = localStorage.getItem(`folders_${profileData.id}`);
+        if (storedFolders) {
+          setFolders(JSON.parse(storedFolders));
+        }
       }
-    }
+    };
+
+    initializeDashboard();
   }, [router]);
 
   // Create folder
@@ -365,6 +384,16 @@ export default function DashboardPage() {
 
   const generateContent = async () => {
     if (!contentInput.trim() && !selectedFile) return;
+    if (!profile) return;
+
+    // Check usage limits
+    const usageCheck = canGenerate(profile.id);
+    setRemainingGenerations(usageCheck.remaining);
+    
+    if (!usageCheck.allowed) {
+      setIsPaywallOpen(true);
+      return;
+    }
 
     setIsProcessing(true);
     showToast("Starting content generation...", "info");
@@ -566,6 +595,13 @@ export default function DashboardPage() {
         localStorage.setItem(`content_${profile.id}`, JSON.stringify(updatedContent));
       }
 
+      // Increment usage count after successful generation
+      if (newItems.length > 0) {
+        incrementUsage(profile.id);
+        const newUsage = canGenerate(profile.id);
+        setRemainingGenerations(newUsage.remaining);
+      }
+
       // Show success with warning if some failed
       if (errors.length > 0) {
         showToast(`Generated ${newItems.length} materials, but ${errors.length} failed`, "warning");
@@ -705,6 +741,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col gap-4">
+                {sidebarExpanded && profile && (
+                  <UsageIndicator profileId={profile.id} onUpgradeClick={() => setIsPaywallOpen(true)} />
+                )}
                 <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
                   <span className="material-symbols-outlined">settings</span>
                   {sidebarExpanded && <p className="text-sm font-medium">Settings</p>}
@@ -1468,6 +1507,14 @@ export default function DashboardPage() {
         onRename={handleRename}
         currentTitle={itemToRename?.title || ""}
         itemType={itemToRename?.type || "item"}
+      />
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        isOpen={isPaywallOpen}
+        onClose={() => setIsPaywallOpen(false)}
+        remainingGenerations={remainingGenerations}
+        profileId={profile?.id || 0}
       />
     </>
   );

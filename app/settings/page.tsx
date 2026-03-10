@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "../components/ThemeProvider";
+import { getSubscription, getPlanById, SUBSCRIPTION_PLANS, getTodayUsage, UserSubscription } from "../lib/subscription";
+import { PromoCodeInput } from "../components/PromoCodeInput";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"general" | "billing" | "notifications" | "account">("general");
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+  const [todayUsage, setTodayUsage] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -18,7 +22,10 @@ export default function SettingsPage() {
         router.push("/profile-selection");
         return;
       }
-      setProfile(JSON.parse(currentProfile));
+      const profileData = JSON.parse(currentProfile);
+      setProfile(profileData);
+      setSubscription(getSubscription(profileData.id));
+      setTodayUsage(getTodayUsage(profileData.id));
     }
   }, [router]);
 
@@ -150,21 +157,67 @@ export default function SettingsPage() {
             {activeTab === "billing" && (
               <>
                 {/* Current Plan */}
-                <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-2xl font-bold">Free Plan</h2>
-                      <p className="text-blue-100 mt-1">Perfect for getting started</p>
+                {(() => {
+                  const currentPlan = getPlanById(subscription?.planId || "free") || SUBSCRIPTION_PLANS[0];
+                  const isPro = subscription?.status === "active" && subscription?.planId !== "free";
+                  return (
+                    <div className={`rounded-xl p-6 text-white ${isPro ? "bg-gradient-to-br from-purple-600 to-pink-600" : "bg-gradient-to-br from-blue-500 to-purple-600"}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h2 className="text-2xl font-bold">{currentPlan.name} Plan</h2>
+                          <p className="text-white/80 mt-1">
+                            {isPro ? "Unlimited learning potential" : "Perfect for getting started"}
+                          </p>
+                        </div>
+                        <span className="material-symbols-outlined text-5xl opacity-20">
+                          {isPro ? "workspace_premium" : "school"}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-6">
+                        <span className="text-4xl font-bold">${currentPlan.price}</span>
+                        <span className="text-white/80">/{currentPlan.interval}</span>
+                      </div>
+                      {isPro ? (
+                        <div className="flex items-center gap-2 bg-white/20 rounded-lg px-4 py-2">
+                          <span className="material-symbols-outlined text-green-300">check_circle</span>
+                          <span>Active until {subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString() : "N/A"}</span>
+                        </div>
+                      ) : (
+                        <Link href="/pricing" className="block w-full bg-white text-purple-600 font-semibold py-3 rounded-lg hover:bg-purple-50 transition-colors text-center">
+                          Upgrade to Pro
+                        </Link>
+                      )}
                     </div>
-                    <span className="material-symbols-outlined text-5xl opacity-20">workspace_premium</span>
+                  );
+                })()}
+
+                {/* Usage Stats */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Today's Usage</h2>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-4xl font-bold">$0</span>
-                    <span className="text-blue-100">/month</span>
+                  <div className="p-6">
+                    {subscription?.planId !== "free" && subscription?.status === "active" ? (
+                      <div className="flex items-center gap-3 text-green-600">
+                        <span className="material-symbols-outlined">all_inclusive</span>
+                        <span className="font-medium">Unlimited generations</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <span className="text-gray-600 dark:text-gray-400">Generations used today</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{todayUsage} / 3</span>
+                        </div>
+                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${todayUsage >= 3 ? "bg-red-500" : todayUsage >= 2 ? "bg-amber-500" : "bg-green-500"}`}
+                            style={{ width: `${Math.min((todayUsage / 3) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Resets daily at midnight</p>
+                      </div>
+                    )}
                   </div>
-                  <button className="w-full bg-white text-blue-600 font-semibold py-3 rounded-lg hover:bg-blue-50 transition-colors">
-                    Upgrade to Pro
-                  </button>
                 </div>
 
                 {/* Plan Features */}
@@ -173,32 +226,48 @@ export default function SettingsPage() {
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan Features</h2>
                   </div>
                   <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-green-600">check_circle</span>
-                      <span className="text-gray-700 dark:text-gray-300">10 documents per month</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-green-600">check_circle</span>
-                      <span className="text-gray-700 dark:text-gray-300">Basic AI features</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-gray-400">cancel</span>
-                      <span className="text-gray-400 line-through">Unlimited documents</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-gray-400">cancel</span>
-                      <span className="text-gray-400 line-through">Advanced AI models</span>
-                    </div>
+                    {(getPlanById(subscription?.planId || "free") || SUBSCRIPTION_PLANS[0]).features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-green-600">check_circle</span>
+                        <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Billing History */}
+                {/* Promo Code */}
                 <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Billing History</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Promo Code</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Have a promo code? Redeem it here</p>
                   </div>
                   <div className="p-6">
-                    <p className="text-center text-gray-500 dark:text-gray-400 py-8">No billing history yet</p>
+                    <PromoCodeInput 
+                      email={profile?.email || "demo@example.com"} 
+                      profileId={profile?.id || 0}
+                      onSuccess={() => {
+                        const newSub = getSubscription(profile?.id || 0);
+                        setSubscription(newSub);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Manage Subscription */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Manage Subscription</h2>
+                  </div>
+                  <div className="p-6 space-y-3">
+                    <Link href="/pricing" className="btn-secondary w-full flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined">compare</span>
+                      View All Plans
+                    </Link>
+                    {subscription?.status === "active" && subscription?.planId !== "free" && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                        To cancel or modify your subscription, please contact support.
+                      </p>
+                    )}
                   </div>
                 </div>
               </>
