@@ -6,14 +6,29 @@ import Link from "next/link";
 import { useTheme } from "../components/ThemeProvider";
 import { getSubscription, getPlanById, SUBSCRIPTION_PLANS, getTodayUsage, UserSubscription } from "../lib/subscription";
 import { PromoCodeInput } from "../components/PromoCodeInput";
+import { useAuth } from "../lib/auth";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut, getUserEmail, getUserName, isConfigured } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"general" | "billing" | "notifications" | "account">("general");
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [todayUsage, setTodayUsage] = useState(0);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Clear local storage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("currentProfile");
+      }
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -305,6 +320,31 @@ export default function SettingsPage() {
             {/* Account Tab */}
             {activeTab === "account" && (
               <>
+                {/* Firebase Account Info */}
+                {user && (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-900/50 overflow-hidden">
+                    <div className="p-6 border-b border-blue-200 dark:border-blue-900/50">
+                      <h2 className="text-xl font-bold text-blue-900 dark:text-blue-400">Firebase Account</h2>
+                      <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">Signed in with Firebase</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                          {getUserName().charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white">{getUserName()}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{getUserEmail()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                        <span className="material-symbols-outlined text-base">check_circle</span>
+                        <span>Authenticated with Firebase</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Profile Information */}
                 <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-800">
@@ -346,6 +386,23 @@ export default function SettingsPage() {
                       <span className="material-symbols-outlined">add</span>
                       Create New Profile
                     </Link>
+                  </div>
+                </div>
+
+                {/* Logout */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Session</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Sign out of your account</p>
+                  </div>
+                  <div className="p-6">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined">logout</span>
+                      Log Out
+                    </button>
                   </div>
                 </div>
 
